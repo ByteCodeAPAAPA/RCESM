@@ -1,0 +1,75 @@
+package com.example.rces.api.test;
+
+import com.example.rces.dto.SgiCreateDTO;
+import com.example.rces.dto.SgiDTO;
+import io.qameta.allure.Feature;
+import io.qameta.allure.Owner;
+import io.qameta.allure.Severity;
+import io.qameta.allure.Story;
+import org.junit.jupiter.api.*;
+
+import java.time.LocalDate;
+import java.util.UUID;
+
+import static com.example.rces.api.steps.SgiControllerSteps.*;
+import static com.example.rces.data.Sgi.createTestSgiDto;
+import static com.example.rces.utils.DateUtil.formatedDate;
+import static io.qameta.allure.SeverityLevel.CRITICAL;
+import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+import static org.junit.jupiter.api.Assertions.assertAll;
+
+@Feature("Api")
+@Story("Api Мероприятия")
+@Tags({@Tag("SgiController"), @Tag("api")})
+@DisplayName("Мероприятия (API)")
+public class SgiControllerTest extends BaseApiTest {
+
+    private UUID createdSgiId;
+
+    @AfterEach
+    void cleanUp() {
+        if (createdSgiId != null) {
+            deleteSgiById(createdSgiId);
+        }
+    }
+
+    @Test
+    @DisplayName("Полный api цикл работы с мероприятием: создание → редактирование → выполнение → удаление")
+    @Owner("ByteCodeAPAA")
+    @Severity(CRITICAL)
+    public void fullSgiLifecycle () {
+        String uniqueEventName = "Тестовое мероприятие " + UUID.randomUUID();
+        SgiCreateDTO createSgiDTO = createTestSgiDto(uniqueEventName);
+
+        // 1. Создание мероприятия
+        SgiDTO sgi = createSGI(createSgiDTO);
+        createdSgiId = sgi.getId();
+        SgiDTO finalSgi = sgi;
+        assertAll("Проверка создания",
+                () -> assertThat(finalSgi.getId()).isNotNull(),
+                () -> assertThat(finalSgi.getEvent()).isEqualTo(uniqueEventName)
+        );
+
+        // 2. Добавление плановой даты
+        sgi = addPlanDate(sgi);
+        assertThat(sgi.getPlanDate()).isEqualTo(LocalDate.now());
+
+        // 3. Добавление факта выполнения
+        LocalDate executionDate = LocalDate.now();
+        String report = "Тестовый отчет " + UUID.randomUUID();
+        sgi = addFactExecution(sgi.getId(), executionDate, report);
+        SgiDTO finalSgi1 = sgi;
+        assertAll("Проверка выполнения",
+                () -> assertThat(finalSgi1.getFactExecution().getExecutionDate()).isEqualTo(formatedDate(executionDate)),
+                () -> assertThat(finalSgi1.getFactExecution().getReport()).isEqualTo(report)
+        );
+
+        // 4. Согласование
+        Boolean expectedTrueAgree = agreeEvent(sgi.getId(), true);
+            assertThat(expectedTrueAgree).isTrue();
+
+        // 5. Отмена согласования
+        Boolean expectedFalseAgree = agreeEvent(sgi.getId(), false);
+        assertThat(sgi.getAgree()).isFalse();
+    }
+}

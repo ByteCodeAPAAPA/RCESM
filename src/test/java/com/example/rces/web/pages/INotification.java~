@@ -1,0 +1,21 @@
+package com.example.rces.web.pages;
+
+import static com.codeborne.selenide.Selenide.$;
+import static com.codeborne.selenide.Selenide.$$;
+
+public interface INotification {
+
+    String notificationContainer = "#notifications-container";
+
+    default Boolean haveNotification(String notificationText) {
+        return $(notificationContainer).isDisplayed() &&
+                $$("#notifications-container div.notification")
+                        .asFixedIterable()
+                        .stream()
+                        .anyMatch(el ->
+                                el.isDisplayed() &&
+                                        el.getText().contains(notificationText)
+                        );
+    }
+
+}

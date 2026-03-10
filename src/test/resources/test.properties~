@@ -1,0 +1,7 @@
+# Web tests
+webBrowserName=chrome
+webBaseUrl=localHost:2005
+webBrowserSize=1920x1080
+webPageLoadTimeout=10000
+webTimeout=10000
+webIsHeadless=false

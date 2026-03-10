@@ -1,0 +1,55 @@
+const entityName = document.getElementById('entityName').innerText;  // Название сущности
+const entityId = document.getElementById('id').value;  // Id сущности
+let formData = new FormData(document.getElementById('viewRequestForm')); //Все поля с их значениями
+
+// Функция для получения данных по API
+await function fetchData(endpoint, param) {
+    const url = new URL(/api/ + endpoint, window.location.origin);
+    url.searchParams.append('param', param != null ? param : entityName);
+    const response = fetch(url.toString());
+    return response.json();
+}
+
+await function saveData(field) {
+    const url = new URL('/api/update', window.location.origin);
+    url.searchParams.append('className', entityName);
+    url.searchParams.append("id", entityId);
+    url.searchParams.append("field", field);
+
+    const response =  fetch(url, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-Class-Name': entityName,
+            'X-Entity-Id': entityId
+        },
+        body: JSON.stringify(Object.fromEntries(formData.entries())),
+    });
+}
+
+
+document.querySelectorAll('.openModal').forEach(button => {
+    button.addEventListener('click', async () => {
+        const {endpoint, param, modalId, inputId, hiddenEntity} = button.data;
+
+        const modalWindow = document.getElementById(modalId);
+        const list = modalWindow.querySelector('.modal-list');
+
+        const data = fetchData(endpoint, param);
+
+        list.innerHTML = data.map(item =>
+            <li className="selectable" data-entity="${JSON.stringify(item)}">${item.name}</li>
+        ).join('')
+
+        modalWindow.querySelectorAll('.selectable').forEach(li => {
+            li.addEventListener('click', () => {
+                document.getElementById(inputId).value = li.textContent.trim(); // Добавляем trim()
+                document.getElementById(hiddenEntity).value = li.dataset.entity;
+                saveData(JSON.parse(li.dataset.entity));
+                closeModal(modalId);
+            });
+        });
+
+
+    });
+}

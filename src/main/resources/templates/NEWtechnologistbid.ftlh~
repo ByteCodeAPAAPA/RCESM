@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Заявка на вызов технолога</title>
+    <link rel="stylesheet" href="/stylesBid.css">
+</head>
+<body>
+
+<div id="entityName" style="display: none;">Technologist</div>
+
+<#if createForm!false>
+    <!-- Форма создания заявки -->
+    <form id="createRequestForm" action="/technologistbid/create" method="POST" class="modern-form"
+          enctype="multipart/form-data">
+        <h2>Создание заявки</h2>
+
+        <!-- Сотрудник -->
+        <div class="form-group">
+            <label>Сотрудник</label>
+            <div class="form-group-flex">
+                <input type="text" id="employeeName" placeholder="Имя сотрудника" readonly
+                       class="form-input">
+                <input type="hidden" id="employeeId" name="employeeId">
+                <button type="button" class="openModal btn-modern"
+                        data-endpoint="employees"
+                        data-input-id="employeeName"
+                        data-hidden-entity="employeeId"
+                        data-modal-id="employeesModal">
+                    Выбрать
+                </button>
+            </div>
+        </div>
+
+        <!-- Заказ клиента -->
+        <div class="form-group">
+            <label>Заказ клиента</label>
+            <div class="form-group-flex">
+                <input type="text" id="customerOrderName" placeholder="Номер заказа" readonly
+                       class="form-input">
+                <input type="hidden" id="customerOrderId">
+                <button type="button" class="openModal btn-modern"
+                        data-endpoint="customerOrders"
+                        data-input-id="customerOrderName"
+                        data-hidden-entity="customerOrderId"
+                        data-modal-id="customerOrdersModal">
+                    Выбрать
+                </button>
+            </div>
+        </div>
+
+        <!-- Причина -->
+        <div class="form-group">
+            <label>Причина</label>
+            <div class="form-group-flex">
+                <input type="text" id="reasonsName" placeholder="Причина" readonly class="form-input">
+                <input type="hidden" id="reasonsId">
+                <button type="button" class="openModal btn-modern"
+                        data-endpoint="reasons"
+                        data-input-id="reasonsName"
+                        data-hidden-entity="reasonsId"
+                        data-modal-id="reasonsModal">
+                    Выбрать
+                </button>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label>Комментарий</label>
+            <div class="form-group-flex">
+                <input type="text" id="comment" placeholder="Комментарий" class="form-input">
+            </div>
+        </div>
+
+        <!-- Фото -->
+        <div class="form-group">
+            <label for="additionalFiles">Загрузить фотографии:</label>
+            <input type="file" id="additionalFiles" name="additionalFiles" accept="image/*" multiple class="add-photo">
+        </div>
+
+        <!-- Кнопка отправки -->
+        <button type="submit" class="btn-modern submit-btn">Создать заявку</button>
+    </form>
+</#if>
+
+<#if viewForm!false>
+    <!-- Форма просмотра заявки -->
+    <form id="viewRequestForm" class="modern-form">
+        <input type="hidden" name="id" value="${bid.id}"/>
+
+        <div class="form-group">
+            <span class="form-value request-number">Заявка №${bid.requestNumber}</span>
+        </div>
+
+        <div class="form-group">
+            <label>Дата создания:</label>
+            <span class="form-value">${bid.createDate}</span>
+        </div>
+
+        <div class="form-group form-group-flex">
+            <label>Заказ клиента:</label>
+            <input type="text" id="customerOrderName"
+                   value="${bid.customerOrder.name?trim}"
+                   readonly
+                   class="form-input">
+            <input type="hidden" id="customerOrderId" value="${bid.customerOrder.id}" name="customerOrder">
+            <button type="button" class="openModal btn-modern"
+                    data-endpoint="customerOrders"
+                    data-display-field="name"
+                    data-input-id="customerOrderName"
+                    data-hidden-id="customerOrderId"
+                    data-modal-id="customerOrdersModal"
+                    data-save="Technologist">
+                Изменить
+            </button>
+        </div>
+
+        <div class="form-group form-group-flex">
+            <label>Ответственный:</label>
+            <input type="text" id="employeeName"
+                   value="${bid.employee.name?trim}"
+                   readonly
+                   class="form-input">
+            <input type="hidden" id="employeeId" value="${bid.employee.id?c}" name="employee">
+            <button type="button" class="openModal btn-modern"
+                    data-endpoint="employees"
+                    data-display-field="name"
+                    data-input-id="employeeName"
+                    data-hidden-id="employeeId"
+                    data-modal-id="employeesModal"
+                    data-save="Technologist">
+                Изменить
+            </button>
+        </div>
+
+        <div class="form-group form-group-flex">
+            <label>Комментарий:</label>
+            <input type="text" id="comment"
+                   value="${bid.comment!''}"
+                   class="form-input"
+                   data-save="Technologist"
+                   name="comment">
+        </div>
+
+        <div class="form-group form-group-flex telegram-checkbox">
+            <label for="telegramCheckbox">Отправить уведомление в Telegram</label>
+            <input type="checkbox" id="telegramCheckbox" name="sendToTelegram" class="form-checkbox">
+        </div>
+
+        <!-- Кнопка для открытия модального окна просмотра фото-->
+        <button type="button" class="btn-modern" id="openPhotoModal">Прикрепленные фото</button>
+        <!-- Модальное окно для просмотра фото -->
+        <div id="photoModal" data-save="Technologist" class="modal">
+            <div class="modal-content">
+                <span class="close">&times;</span>
+                <div class="attached-photos">
+                    <#list bid.image as img>
+                        <div class="photo-container">
+                            <img src="${img.base64Data}" id="image" name="image" alt="Фото" class="attached-photo">
+                            <button class="btn-delete-photo" data-id="${img.id}">Удалить</button>
+                        </div>
+                    </#list>
+                </div>
+                <input type="file" id="uploadPhoto" style="display: none;" accept="image/*">
+                <button type="button" class="btn-modern" id="addPhoto">Прикрепить фото</button>
+            </div>
+        </div>
+
+        <div class="form-group form-group-flex">
+            <label>Статус</label>
+            <input type="text" id="statusName" name="status"
+                   value="${bid.status.name()?trim}"
+                   readonly
+                   class="form-input">
+            <input type="hidden" id="statusId" value="${bid.status.id}">
+            <button type="button" class="openModal btn-modern"
+                    data-endpoint="status"
+                    data-display-field="name"
+                    data-input-id="statusName"
+                    data-hidden-id="statusId"
+                    data-modal-id="statusModal"
+                    data-save="Technologist">
+                Изменить и уведомить
+            </button>
+        </div>
+
+    </form>
+</#if>
+
+<!-- Модальные окна -->
+<div id="employeesModal" class="modal">
+    <div class="modal-content">
+        <span class="close">&times;</span>
+        <h2>Список сотрудников</h2>
+        <ul id="employeesList" class="modal-list"></ul>
+    </div>
+</div>
+
+<div id="customerOrdersModal" class="modal">
+    <div class="modal-content">
+        <span class="close">&times;</span>
+        <h2>Список заказов</h2>
+        <ul id="customerOrdersList" class="modal-list"></ul>
+    </div>
+</div>
+
+<div id="reasonsModal" class="modal">
+    <div class="modal-content">
+        <span class="close">&times;</span>
+        <h2>Список причин</h2>
+        <ul id="reasonsList" class="modal-list"></ul>
+    </div>
+</div>
+
+<div id="statusModal" class="modal">
+    <div class="modal-content">
+        <span class="close">&times;</span>
+        <h2>Статусы</h2>
+        <ul id="statusList" class="modal-list"></ul>
+    </div>
+</div>
+
+<!-- Уведомления -->
+<div id="notification-container"></div>
+
+<script src="/script.js"></script>
+</body>
+</html>

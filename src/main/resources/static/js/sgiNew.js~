@@ -1,0 +1,920 @@
+const itemsPerPage = 16; //Начальное кол-во строк на странице
+const localCache = new Map();
+
+let currentPage = 1;
+let totalPagesCount = 1;
+let selectedRows = [];
+
+//Обработчик работы с окном создания задачи
+$(document).on('click', '#createSGI', async function (e) {
+    e.preventDefault();
+
+    const dialog = $('#create-dialog');
+    dialog.find('[name]').val('');
+    // reset file input properly
+    dialog.find('input[type="file"]').each(function () {
+        const input = $(this).clone();
+        input.val('');
+        $(this).replaceWith(input);
+    });
+    dialog.find('.file-list').empty();
+
+    const field = dialog.find('[name="employee"]');
+    field.find('option').not(':first').remove();
+    const employeesData = await cache.get('employee');
+    const filteredEmployees = employeesData.filter(employee =>
+        ['EVENT', 'CONTROL'].includes(employee.role)
+    );
+    filteredEmployees.forEach(employee => {
+        field.append($('<option>', {text: employee.name})
+        );
+    });
+    //Клик вне диалога
+    dialog.off('click').on('click', (e) => {
+        if (e.target.nodeName === 'DIALOG') {
+            localCache.delete('validFileMap');
+            localCache.delete('imagesMap');
+            e.target.close();
+        }
+    });
+    //Клик по "Отменить"
+    dialog.on('click', '#cancelButton', () => {
+        localCache.delete('validFileMap');
+        localCache.delete('imagesMap');
+        dialog[0].close();
+    });
+
+    dialog[0].showModal();
+});
+//Обработчик открытия подзадач
+$(document).on('click', '.hamburger', function (e) {
+    if ($(e.target).is('input')) {
+        return;
+    }
+    const $currentRow = $(this).closest('.row-items-row');
+    const $innerRows = $currentRow.siblings('.row-items-inner-row');
+    $innerRows.slideToggle(400);
+});
+//Обработчик работы с окном редактирования
+$(document).on('click', '.editing-btn', async function (e) {
+    const currentRow = e.target.closest('.row-items-row');
+    const currentId = $(currentRow).data('id');
+    const currentSGI = localCache.get(currentId);
+    const dialog = $('#editing-dialog');
+
+    for (const [key, value] of Object.entries(currentSGI)) {
+        const field = dialog.find(`[data-field="${key}"]`);
+        if (!field.length) continue;
+        if (key === 'employee') {
+            field.empty();
+            const employeesData = await cache.get('employee');
+            const filteredEmployees = employeesData.filter(employee =>
+                ['EVENT', 'CONTROL'].includes(employee.role)
+            );
+            filteredEmployees.forEach(employee => {
+                field.append(
+                    $('<option>', {
+                        text: employee.name
+                    })
+                );
+            });
+        }
+        if (key === 'imagesSGI') continue;
+        field.val(value || '');
+    }
+    if (!dialog.find('#createSubSGI').length) {
+        dialog.find('.modal-footer').prepend(`<button class="btn btn-primary" id="createSubSGI">Создать подзадачу</button>`);
+    }
+
+    await renderImages(dialog, currentSGI.imagesSGI || []);
+    dialog[0].showModal();
+
+    $('#editing-dialog #saveBtn').off('click').on('click', function (e) {
+        if (currentSGI.agree) {
+            return alert("Нельзя редактировать выполненное мероприятие")
+        }
+        e.preventDefault;
+
+        const formData = new FormData();
+        formData.append('id', currentId);
+        formData.append('factExecutionSGIBool', false)
+        $(dialog).find('[data-field]').each((_, el) => {
+            if (el.type !== 'file') {
+                formData.append(el.dataset.field, el.value);
+            } else {
+                for (let file of el.files) {
+                    formData.append(el.dataset.field, file);
+                }
+            }
+        });
+        $.ajax({
+            url: 'sgi/save-change',
+            method: 'POST',
+            data: formData,
+            contentType: false,
+            processData: false,
+            success: function () {
+                $(dialog).find('[data-field]').each((_, el) => {
+                    const fieldName = el.dataset.field;
+                    const fieldValue = el.value;
+                    const targetElement = $(currentRow).find(`[data-field="${fieldName}"]`);
+                    if (el.tagName === 'SELECT') {
+                        const selectedText = $(el).find('option:selected').text();
+                        targetElement.text(selectedText);
+                    } else if (fieldName === 'desiredDate') {
+                        targetElement.text(formatDate(fieldValue));
+                    } else if (fieldName === 'planDate') {
+                        return true;
+                    } else targetElement.text(fieldValue);
+                    if (fieldName === 'imagesSGI') {
+
+                    } else currentSGI[fieldName] = fieldValue;
+                });
+                localCache.set(currentId, currentSGI);
+                localCache.delete('validFileMap');
+                dialog[0].close();
+            },
+            error: function () {
+                alert('Редактировать может только создатель задачи или такого пользователя нет');
+                dialog[0].close();
+            }
+        });
+
+    });
+    $('#createSubSGI').off('click').on('click', async function () {
+        if (currentSGI.agree) {
+            return alert("Нельзя редактировать выполненное мероприятие")
+        }
+        dialog[0].close();
+        const createDialog = $('#create-dialog');
+        createDialog.find('[name="parentId"]').val(currentId);
+
+        const field = createDialog.find('[name="employee"]');
+        field.find('option').not(':first').remove();
+        const employeesData = await cache.get('employee');
+        const filteredEmployees = employeesData.filter(employee =>
+            ['EVENT', 'CONTROL'].includes(employee.role)
+        );
+        filteredEmployees.forEach(employee => {
+            field.append($('<option>', {text: employee.name})
+            );
+        });
+
+        createDialog[0].showModal();
+    });
+    //Клик на крестик
+    dialog.find('#cancelButton').off('click').on('click', () => {
+        localCache.delete('validFileMap');
+        localCache.delete('imagesMap');
+        dialog[0].close();
+    });
+    //Клик вне диалога
+    dialog.off('click').on('click', (e) => {
+        if (e.target.nodeName === 'DIALOG') {
+            localCache.delete('validFileMap');
+            localCache.delete('imagesMap');
+            e.target.close();
+        }
+    });
+});
+//Обработчик работы с окном факт выполнения
+$(document).on('click', '.execution-btn', async function (e) {
+    e.preventDefault;
+
+    const currentRow = e.target.closest('.row-items-row');
+    const currentId = $(currentRow).data('id');
+    const currentSGI = localCache.get(currentId);
+    const dialog = $('#execution-dialog');
+
+    for (const [key, value] of Object.entries(currentSGI.factExecutionSGI || {})) {
+        const field = dialog.find(`[data-field="${key}"]`);
+        if (!field.length) continue;
+        if (key === 'imagesFactSGI') continue;
+        field.val(value || '');
+    }
+
+    $(document).on('click', '#execution-dialog #saveBtn', function () {
+        if (currentSGI.agree) {
+            return alert("Нельзя редактировать выполненное мероприятие")
+        }
+        if (dialog.find(`[data-field="executionDate"]`).val() === '') return alert("Не заполнена дата выполнения")
+        const formData = new FormData();
+        formData.append('id', currentId);
+        formData.append('factExecutionSGIBool', true)
+        $(dialog).find('[data-field]').each((_, el) => {
+            if (el.type !== 'file') {
+                formData.append(el.dataset.field, el.value);
+            } else {
+                for (let file of el.files) {
+                    formData.append(el.dataset.field, file);
+                }
+            }
+        });
+
+        $.ajax({
+            url: 'sgi/save-change',
+            method: 'POST',
+            data: formData,
+            contentType: false,
+            processData: false,
+            success: function () {
+                $(dialog).find('[data-field]').each((_, el) => {
+                    const fieldName = el.dataset.field;
+                    const fieldValue = el.value;
+                    const targetElement = $(currentRow).find(`[data-field="${fieldName}"]`);
+                    if (fieldName === 'executionDate') {
+                        targetElement.text(formatDate(fieldValue));
+                        currentSGI.planDate = fieldValue;
+                    } else targetElement.text(fieldValue);
+                    if (fieldName === 'imagesFactSGI') {
+
+                    } else currentSGI.factExecutionSGI[fieldName] = fieldValue;
+                });
+                localCache.set(currentId, currentSGI);
+                localCache.delete('validFileMap');
+                dialog[0].close();
+            },
+            error: function () {
+                alert('Редактировать может только создатель задачи или такого пользователя нет');
+                dialog[0].close();
+            }
+        });
+    });
+
+    await renderImages(dialog, currentSGI.factExecutionSGI?.imagesFactSGI || []);
+    dialog[0].showModal();
+
+    //Клик на крестик
+    dialog.find('#cancelButton').off('click').on('click', () => {
+        localCache.delete('validFileMap');
+        localCache.delete('imagesMap');
+        dialog[0].close();
+    });
+    //Клик вне диалога
+    dialog.off('click').on('click', (e) => {
+        if (e.target.nodeName === 'DIALOG') {
+            localCache.delete('validFileMap');
+            localCache.delete('imagesMap');
+            e.target.close();
+        }
+    });
+});
+
+//Обработчик работы с фильтрами
+$(document).on('click', '.btn-filters', async function (e) {
+    e.preventDefault();
+
+    const dialog = $('#filter-dialog');
+    dialog[0].showModal();
+
+    // Заполняем select сотрудников
+    const employeeField = dialog.find('[data-field="employee"]');
+    employeeField.empty();
+    employeeField.append($('<option>', {value: '', text: 'Все сотрудники'}));
+
+    const employeesData = await cache.get('employee');
+    const filteredEmployees = employeesData.filter(employee =>
+        ['EVENT', 'CONTROL'].includes(employee.role)
+    );
+
+    filteredEmployees.forEach(employee => {
+        employeeField.append($('<option>', {
+            value: employee.name,
+            text: employee.name
+        }));
+    });
+
+    // Обработчик применения фильтров
+    dialog.find('#filtered').off('click').on('click', function () {
+        const filters = {
+            number: dialog.find('[data-field="number"]').val().trim(),
+            workcenter: dialog.find('[data-field="workcenter"]').val().trim(),
+            event: dialog.find('[data-field="event"]').val().trim(),
+            actions: dialog.find('[data-field="actions"]').val().trim(),
+            department: (dialog.find('[data-field="department"] option:selected').text().trim() === 'Выберите отдел') ? '' : dialog.find('[data-field="department"] option:selected').text().trim(),
+            employee: dialog.find('[data-field="employee"]').val(),
+            desiredDate: dialog.find('[data-field="desiredDate"]').val(),
+            planDate: dialog.find('[data-field="planDate"]').val(),
+            note: dialog.find('[data-field="note"]').val().trim()
+        };
+
+        // Применяем фильтры к текущей странице
+        applyFiltersToCurrentPage(filters);
+        dialog[0].close();
+    });
+
+    // Обработчик сброса фильтров
+    dialog.find('#default-filter').off('click').on('click', function () {
+        dialog.find('input, textarea, select').val('');
+        // Показываем все строки на текущей странице
+        $('.table-content-row').show();
+    });
+
+    //Клик на крестик
+    dialog.find('#cancelButton').off('click').on('click', (e) => {
+        localCache.delete('validFileMap');
+        localCache.delete('imagesMap');
+        dialog[0].close();
+    });
+
+    //Клик вне диалога
+    dialog.off('click').on('click', (e) => {
+        if (e.target.nodeName === 'DIALOG') {
+            localCache.delete('validFileMap');
+            localCache.delete('imagesMap');
+            e.target.close();
+        }
+    });
+});
+
+// Функция применения фильтров к текущей странице
+function applyFiltersToCurrentPage(filters) {
+    const rows = document.querySelectorAll('.row-items');
+
+    rows.forEach(row => {
+        let notMatch = null;
+
+        for (const [key, value] of Object.entries(filters)) {
+            if (!value) continue;
+            notMatch = true
+
+            const cell = row.querySelector(`[data-field="${key}"]`);
+            if (!cell) continue;
+
+            const cellValue = cell.textContent.trim();
+
+            if (key === 'desiredDate' || key === 'planDate') {
+                const formattedDate = formatDate(value);
+                if (cellValue === formattedDate) {
+                    notMatch = false;
+                    break;
+                }
+            } else if (cellValue.toLowerCase() === value.toLowerCase()) {
+                notMatch = false;
+                break;
+            }
+        }
+
+        row.style.display = notMatch != null && notMatch ? 'none' : '';
+    });
+}
+
+//Обработчик согласования
+$(document).on('click', '#toggleAgreement', async function (event) {
+    event.preventDefault();
+    const isChecked = this.checked;
+    const currentRow = $(this).closest('.row-items-row');
+    const currentId = $(currentRow).data('id');
+    const currentSGI = localCache.get(currentId);
+
+    const formData = new FormData();
+    formData.append("id", currentId);
+    formData.append("agreed", isChecked);
+
+    if (currentSGI.planDate === null || currentSGI.planDate === "") return alert("Не заполнено поле планируемый срок!");
+    if (!currentSGI.executions) return alert("У мероприятия нет факта выполнения!");
+    if (isChecked && currentSGI.subSGI && !currentSGI.subSGI?.every(sub => sub.agree)) return alert("Все подзадачи должны быть согласованы!");
+    if (!isChecked && currentSGI?.parent && currentSGI.parent.agree) return alert("Нельзя отменить согласование подзадачи, если родительская задача согласована!");
+    await $.ajax({
+        url: '/sgi/agree',
+        method: 'POST',
+        data: formData,
+        contentType: false,
+        processData: false,
+        success: function () {
+            currentSGI.agree = isChecked;
+            localCache.set(currentId, currentSGI);
+            if (isChecked) {
+                currentRow.addClass('complete');
+            } else {
+                currentRow.removeClass('complete');
+            }
+            currentRow.find('#toggleAgreement').prop('checked', isChecked);
+        },
+        error: function () {
+            alert('Вы не можете закрывать заявку');
+        }
+    });
+});
+//Обработчик фото добавление фото
+$(document).on('click', '.file-upload', async function () {
+    $(this).prop('disabled', true);
+    const currentDialog = $(this).closest('dialog');
+    const inputFiles = currentDialog.find('[name="additionalFiles"]');
+    const imageContainer = currentDialog.find('.file-list');
+
+    //Добавление фото в инпут
+    inputFiles.off('change').on('change', async function (e) {
+        e.preventDefault();
+
+        const input = e.target;
+        const files = input.files;
+        input.files = new DataTransfer().files;
+
+        if (!localCache.has('imagesMap')) {
+            localCache.set('imagesMap', new Map);
+        }
+        for (let file of files) {
+            if (!localCache.get('imagesMap').has(file.name)) {
+                localCache.get('imagesMap').set(file.name, file);
+            }
+        }
+        const dataTransfer = new DataTransfer();
+        for (const [fileName, file] of localCache.get('imagesMap')) {
+            if (file instanceof File) {
+                dataTransfer.items.add(file)
+                const imageUrl = URL.createObjectURL(file);
+                const fileItem = `
+                <div class="file-item">
+                    <img src="${imageUrl}" alt="${file.name}">
+                </div>`;
+                imageContainer.append(fileItem);
+                localCache.get('imagesMap').set(file.name, null);
+            }
+        }
+        const validFileMap = localCache.has('validFileMap') ? localCache.get('validFileMap') : new Map();
+        for (let file of dataTransfer.files) {
+            validFileMap.set(file.name, file);
+        }
+        localCache.set('validFileMap', validFileMap);
+        input.files = Array.from(validFileMap.values()).reduce((dt, file) => (dt.items.add(file), dt), new DataTransfer()).files;
+    });
+    inputFiles.click();
+    $(document).on('click', () => $('.context-menu').remove());
+    $(this).prop('disabled', false);
+});
+//Удаление фото ПКМ В диалоге
+$(document).on('contextmenu', 'dialog img', e => {
+    e.preventDefault();
+    const currentDialog = $(e.target).closest('dialog');
+    $('.context-menu').remove();
+    let menu = $('<div class="context-menu"><button class="context-btn">Удалить</button></div>');
+    $(currentDialog).append(menu);
+    let dialogOffset = $(currentDialog).offset();
+    menu.css({
+        'position': 'absolute',
+        'top': (e.pageY - dialogOffset.top) + 'px',
+        'left': (e.pageX - dialogOffset.left) + 'px',
+        'background': '#f8f9fa',
+        'border': '1px solid #dee2e6',
+        'padding': '8px',
+        'border-radius': '4px',
+        'box-shadow': '0 4px 12px rgba(0,0,0,0.15)'
+    });
+    menu.find('.context-btn').css({
+        'background': '#dc3545',
+        'color': 'white',
+        'border': 'none',
+        'padding': '6px 12px',
+        'cursor': 'pointer',
+        'border-radius': '3px',
+        'font-size': '0.875rem'
+    });
+
+    menu.find('.context-btn').click(() => {
+        const imgName = $(e.target).attr('alt');
+        if (localCache.has('imagesMap')) {
+            localCache.get('imagesMap').delete(imgName);
+        }
+        const validFileMap = localCache.get('validFileMap');
+        validFileMap.delete(imgName)
+        localCache.set('validFileMap', validFileMap)
+        let input = currentDialog.find('input[type="file"]').clone()[0];
+        input.files = Array.from(validFileMap.values()).reduce((dt, file) => (dt.items.add(file), dt), new DataTransfer()).files;
+        currentDialog.find('input[type="file"]').replaceWith(input);
+        $(e.target).remove();
+        menu.remove();
+    });
+});
+//Обработчик двойного клика таблицы
+$(document).off('dblclick').on('dblclick', '.row-items-row', function () {
+    const row = $(this);
+    const rowId = $(row).data('id');
+
+    if (row.hasClass('selected-row')) {
+        row.removeClass('selected-row');
+        selectedRows = selectedRows.filter(id => id !== rowId);
+    } else {
+        row.addClass('selected-row');
+        if (!selectedRows.includes(rowId)) {
+            selectedRows.push(rowId);
+        }
+    }
+
+    $('#deleteRowBtn').text(selectedRows.length > 1 ?
+        `Удалить ${selectedRows.length} строк` :
+        'Удалить строку');
+});
+//Обработчик ПКМ по строке таблицы
+$(document).off('contextmenu').on('contextmenu', '.row-items-row', function (e) {
+    e.preventDefault();
+    currentRow = $(this);
+
+    if (selectedRows.length > 0) {
+        $('#customContextMenu').css({
+            top: e.pageY + 'px',
+            left: e.pageX + 'px',
+            display: 'block'
+        });
+    }
+    $('#deleteRowBtn').off('click').on('click', function () {
+        if (selectedRows.length > 0) {
+            deleteSgi(selectedRows);
+        } else if (currentRow) {
+            const rowId = $(currentRow).data('id');
+            deleteSgi([rowId]);
+        }
+    });
+
+    function deleteSgi(rowIds) {
+        if (!rowIds || rowIds.length === 0) return;
+        if (!confirm(`Вы уверены, что хотите удалить ${rowIds.length > 1 ? 'выбранные строки' : 'эту строку'}?`)) {
+            return;
+        }
+
+        $.ajax({
+            url: '/sgi/delete',
+            type: 'DELETE',
+            contentType: 'application/json',
+            data: JSON.stringify(rowIds),
+            success: function () {
+                rowIds.forEach(id => {
+                    $('.row-items-row[data-id="' + id + '"]').remove();
+                    localCache.delete(id);
+                });
+                selectedRows = selectedRows.filter(id => !rowIds.includes(id));
+
+                $('#customContextMenu').hide();
+            },
+            error: function (xhr) {
+                alert('Ошибка при удалении: ' + (xhr.responseJSON?.message || xhr.statusText));
+            }
+        });
+    }
+
+    $('#printRowBtn').off('click').on('click', () => {
+        if (selectedRows.length > 0) {
+            window.open(`/report/print/sgi?ids=${selectedRows.join(',')}`);
+        }
+        $('#customContextMenu').hide();
+    });
+});
+
+//Обработчик печати из менью
+$('.print-menu').on('click', function(e) {
+    // Проверяем, что клик был именно по элементу с data-department
+    const target = $(e.target);
+    const menuItem = target.closest('.print-menu-item');
+
+    if (menuItem.length) {
+        const department = menuItem.data('department');
+        $('<a>', {
+            href: `/report/print/sgi?department=${department}`,
+            download: ''
+        }).appendTo('body')[0].click().remove();
+    }
+});
+
+
+async function loadSGI(page = 1) {
+    return new Promise((resolve, reject) => {
+        $.ajax({
+            url: '/api/sgi/get-page-sgi',
+            type: 'GET',
+            data: {
+                page: page,
+                size: itemsPerPage
+            },
+            success: function (data, textStatus, jqXHR) {
+                resolve({
+                    content: data.content,
+                    totalPages: data.totalPages,
+                    totalRaw: data.totalRaw
+                });
+            }
+        });
+    });
+}
+
+async function buildPagination(totalPages, current) {
+    const $p = $('.pagination');
+    $p.empty();
+
+    const createBtn = (label, page, extraClass = '') => {
+        const btn = $(`<button class="btn btn-secondary page-btn ${extraClass}" data-page="${page}">${label}</button>`);
+        if (page === current) btn.addClass('active');
+        return btn;
+    };
+
+    // Prev
+    if (current > 1) {
+        $p.append(createBtn('‹', current - 1, 'prev-btn'));
+    } else {
+        $p.append($('<button class="btn btn-secondary" disabled>‹</button>'));
+    }
+
+    // Показываем компактную навигацию: максимум 7 кнопок (приближённо)
+    const maxButtons = 7;
+    let start = Math.max(1, current - Math.floor(maxButtons / 2));
+    let end = start + maxButtons - 1;
+    if (end > totalPages) {
+        end = totalPages;
+        start = Math.max(1, end - maxButtons + 1);
+    }
+
+    if (start > 1) {
+        $p.append(createBtn('1', 1));
+        if (start > 2) $p.append($('<span class="dots">...</span>'));
+    }
+
+    for (let i = start; i <= end; i++) {
+        $p.append(createBtn(i, i));
+    }
+
+    if (end < totalPages) {
+        if (end < totalPages - 1) $p.append($('<span class="dots">...</span>'));
+        $p.append(createBtn(totalPages, totalPages));
+    }
+
+    // Next
+    if (current < totalPages) {
+        $p.append(createBtn('›', current + 1, 'next-btn'));
+    } else {
+        $p.append($('<button class="btn btn-secondary" disabled>›</button>'));
+    }
+}
+
+async function createRow(item, indexOnPage) {
+    const hamburger = `
+    <label class="hamburger">
+        <input type="checkbox">
+        <svg viewBox="0 0 32 32">
+            <path class="line line-top-bottom" d="M27 10 13 10C10.8 10 9 8.2 9 6 9 3.5 10.8 2 13 2 15.2 2 17 3.8 17 6L17 26C17 28.2 18.8 30 21 30 23.2 30 25 28.2 25 26 25 23.8 23.2 22 21 22L7 22"></path>
+            <path class="line" d="M7 16 27 16"></path>
+        </svg>                    
+    </label>`;
+
+    const borderClass = item.color === 'RED'
+        ? 'border-danger' :
+        item.color === 'YELLOW'
+            ? 'border-warning' :
+            item.color === 'GREEN'
+                ? 'border-good' : '';
+
+    // вычисляем порядковый номер (глобальный) — начиная с 1
+    const displayNumber = (currentPage - 1) * itemsPerPage + indexOnPage + 1;
+
+    const row = `
+                <div class="row-items">
+                    <div class="row-items-row ${item.color === 'GREY' ? 'complete' : ''}" data-id="${item.id}">
+                        <div class="row-item  ${borderClass}" data-field="number" style="width: var(--no);">
+                            ${item.subSGI && item.subSGI.length > 0 ? hamburger : ''}
+                            ${displayNumber}
+                        </div>
+                        <div class="row-item" data-field="workcenter" style="width: var(--workcenter);">${item.workcenter}</div>
+                        <div class="row-item" data-field="event" style="width: var(--event);">${item.event}</div>
+                        <div class="row-item" data-field="actions" style="width: var(--action);">${item.actions}</div>
+                        <div class="row-item" data-field="department" style="width: var(--department);">${item.departmentName}</div>
+                        <div class="row-item" data-field="employee" style="width: var(--employee);">${item.employee}</div>
+                        <div class="row-item" data-field="desiredDate" style="width: var(--desiredDate);">${formatDate(item.desiredDate)}</div>
+                        <div class="row-item" data-field="note" style="width: var(--note);">${item.note}</div>
+                        <div class="row-item ${borderClass}" data-field="executionDate" style="width: var(--planDate);">${formatDate(item.planDate)}</div>
+                        <div class="row-item" data-field="comment" style="width: var(--comment);">${item.comment}</div>
+                        <div class="row-item" style="width: var(--editing);">
+                            <button type="button" class="btn btn-info btn-sm editing-btn">
+                                <i class="bi bi-pencil-square"></i>
+                            </button>
+                        </div>
+                        <div class="row-item" style="width: var(--executions);">
+                            <button type="button" class="btn btn-info btn-sm execution-btn">
+                                ✔
+                            </button>
+                        </div>
+                        <div class="row-item" style="width: var(--status);">
+                            <div class="checkbox-wrapper-31">
+                                <input type="checkbox" id="toggleAgreement" ${item.agree ? 'checked' : ''}>
+                                <svg viewBox="0 0 35.6 35.6">
+                                    <circle class="background" cx="17.8" cy="17.8" r="17.8"></circle>
+                                    <circle class="stroke" cx="17.8" cy="17.8" r="14.37"></circle>
+                                    <polyline class="check" points="11.78 18.12 15.55 22.23 25.17 12.87"></polyline>
+                                </svg>
+                            </div>
+                        </div>
+                    </div>
+                    ${item.subSGI && item.subSGI.length > 0 ? `
+                    <div class="row-items-inner-row">
+                        ${item.subSGI.map((subItem) => `
+                            <div class="row-items-row ${subItem.color === 'GREY' ? 'complete' : ''}" data-id="${subItem.id}" data-inner="true">
+                                <div class="row-item  ${borderClass}" data-field="number" style="width: var(--no);"></div>
+                                <div class="row-item" data-field="workcenter" style="width: var(--workcenter);">${subItem.workcenter}</div>
+                                <div class="row-item" data-field="event" style="width: var(--event);">${subItem.event}</div>
+                                <div class="row-item" data-field="actions" style="width: var(--action);">${subItem.actions}</div>
+                                <div class="row-item" data-field="departament" style="width: var(--department);">${subItem.departmentName}</div>
+                                <div class="row-item" data-field="employee" style="width: var(--employee);">${subItem.employee}</div>
+                                <div class="row-item" data-field="desiredDate" style="width: var(--desiredDate);">${formatDate(subItem.desiredDate)}</div>
+                                <div class="row-item" data-field="note" style="width: var(--note);">${subItem.note}</div>
+                                <div class="row-item ${borderClass}" data-field="executionDate" style="width: var(--planDate);">${formatDate(subItem.planDate)}</div>
+                                <div class="row-item" data-field="comment" style="width: var(--comment);">${subItem.comment}</div>
+                                <div class="row-item" style="width: var(--editing);">
+                                    <button type="button" class="btn btn-info btn-sm editing-btn">
+                                        <i class="bi bi-pencil-square"></i>
+                                    </button>
+                                </div>
+                                <div class="row-item" style="width: var(--executions);">
+                                    <button type="button" class="btn btn-info btn-sm execution-btn">
+                                        ✔
+                                    </button>
+                                </div>
+                                <div class="row-item" style="width: var(--status);">
+                                    <div class="checkbox-wrapper-31">
+                                        <input type="checkbox" id="toggleAgreement" ${subItem.agree ? 'checked' : ''}>
+                                        <svg viewBox="0 0 35.6 35.6">
+                                            <circle class="background" cx="17.8" cy="17.8" r="17.8"></circle>
+<circle class="stroke" cx="17.8" cy="17.8" r="14.37"></circle>
+                                            <polyline class="check" points="11.78 18.12 15.55 22.23 25.17 12.87"></polyline>
+                                        </svg>
+                                    </div>
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>`
+        : ''}
+                </div>`;
+    $('.table-content-rows').append(row);
+}
+
+async function renderImages(currentDialog, images) {
+    // Конвертация base64 в File
+    const base64ToFile = (base64, name) => {
+        const arr = base64.split(','), mime = arr[0].match(/:(.*?);/)[1],
+            bstr = atob(arr[1]), n = bstr.length, u8arr = new Uint8Array(n);
+        for (let i = 0; i < n; i++) u8arr[i] = bstr.charCodeAt(i);
+        return new File([u8arr], name, {type: mime});
+    };
+    const imageContainer = currentDialog.find('.file-list');
+    imageContainer.empty();
+    const validFileMap = new Map();
+    for (const image of images || []) {
+        imageContainer.append(`
+            <div class="file-item">
+                <img src="${image.data}" alt="${image.name}">
+            </div>`);
+        localCache.set(image.name, null);
+        validFileMap.set(image.name, base64ToFile(image.data, image.name));
+    }
+    localCache.set('validFileMap', validFileMap)
+    let input = currentDialog.find('input[type="file"]').clone()[0];
+    input.files = Array.from(validFileMap.values()).reduce((dt, file) => (dt.items.add(file), dt), new DataTransfer()).files;
+    currentDialog.find('input[type="file"]').replaceWith(input);
+}
+
+async function displayPage(page = 1) {
+    $('.table-content-rows').empty();
+    currentPage = page;
+
+    const SGIPage = await loadSGI(page);
+    totalPagesCount = SGIPage.totalPages;
+    SGIPage.content.forEach((sgi, idx) => {
+        localCache.set(sgi.id, sgi);
+        if (sgi.subSGI && sgi.subSGI.length) sgi.subSGI.forEach(subSgi => localCache.set(subSgi.id, subSgi));
+    });
+
+    for (let i = 0; i < SGIPage.content.length; i++) {
+        await createRow(SGIPage.content[i], i);
+    }
+
+    await buildPagination(totalPagesCount, currentPage);
+}
+
+$(document).on('click', '.pagination .page-btn', function () {
+    const page = parseInt($(this).data('page'), 10);
+    if (!isNaN(page) && page >= 1 && page <= totalPagesCount) {
+        displayPage(page);
+    }
+});
+
+$(document).ready(async function () {
+    await displayPage(1);
+    const style = document.createElement('style');
+    style.textContent = `
+    .selected-row {
+        background-color: #d4edff !important;
+    }`;
+    document.head.appendChild(style);
+});
+
+function formatDate(dateString) {
+    if (!dateString) return "";
+    const date = new Date(dateString);
+    return date.toLocaleDateString('ru-RU');
+}
+
+//Мобильный позор
+(function () {
+    'use strict';
+
+    const mq = window.matchMedia('(max-width: 768px)');
+
+    function isMobile() {
+        return mq.matches;
+    }
+
+    document.addEventListener('click', function (e) {
+        const ham = e.target.closest('.hamburger');
+        if (!ham) return;
+        const rowItems = ham.closest('.row-items');
+        if (!rowItems) return;
+        const willOpen = !rowItems.classList.contains('open');
+        rowItems.classList.toggle('open', willOpen);
+        const checkbox = ham.querySelector('input[type="checkbox"]');
+        if (checkbox) {
+            try {
+                checkbox.checked = willOpen;
+            } catch (err) {
+            }
+        }
+    });
+
+    function wrapRowValues(root) {
+        root = root || document;
+        const rows = root.querySelectorAll('.table-content-rows .row-items-row');
+        rows.forEach(row => {
+            row.querySelectorAll('.row-item').forEach(item => {
+                if (item.querySelector(':scope > .value')) return;
+                const valueSpan = document.createElement('span');
+                valueSpan.className = 'value';
+                while (item.firstChild) {
+                    valueSpan.appendChild(item.firstChild);
+                }
+                item.appendChild(valueSpan);
+                item.dataset.mobileProcessed = '1';
+                if (!item.dataset.field) {
+                    if (item.querySelector('.editing-btn')) item.dataset.field = 'editing';
+                    else if (item.querySelector('.execution-btn')) item.dataset.field = 'execution';
+                    else if (item.querySelector('.checkbox-wrapper-31')) item.dataset.field = 'status';
+                }
+            });
+        });
+    }
+
+    function unwrapRowValues(root) {
+        root = root || document;
+        const rows = root.querySelectorAll('.table-content-rows .row-items-row');
+        rows.forEach(row => {
+            row.querySelectorAll('.row-item').forEach(item => {
+                const value = item.querySelector(':scope > .value');
+                if (!value) return;
+                while (value.firstChild) {
+                    item.insertBefore(value.firstChild, value);
+                }
+                value.remove();
+                delete item.dataset.mobileProcessed;
+            });
+        });
+    }
+
+    function applyResponsiveWrapping() {
+        if (isMobile()) {
+            wrapRowValues(document);
+        } else {
+            unwrapRowValues(document);
+        }
+    }
+
+    document.addEventListener('DOMContentLoaded', applyResponsiveWrapping);
+    window.addEventListener('load', applyResponsiveWrapping);
+    mq.addEventListener ? mq.addEventListener('change', applyResponsiveWrapping) : mq.addListener(applyResponsiveWrapping);
+    const container = document.querySelector('.table-content-rows');
+    if (container) {
+        const mo = new MutationObserver((mutations) => {
+            if (isMobile()) {
+                wrapRowValues(container);
+            } else {
+                unwrapRowValues(container);
+            }
+        });
+        mo.observe(container, {childList: true, subtree: true});
+    }
+    setTimeout(applyResponsiveWrapping, 800);
+    setTimeout(applyResponsiveWrapping, 1600);
+})();
+document.addEventListener("DOMContentLoaded", () => {
+    document.body.addEventListener("click", (e) => {
+        const hamburger = e.target.closest(".hamburger");
+        if (!hamburger) return;
+
+        const rowItems = hamburger.closest(".row-items");
+        if (!rowItems) return;
+        rowItems.classList.toggle("open");
+        const checkbox = hamburger.querySelector("input[type=checkbox]");
+        if (checkbox) {
+            checkbox.checked = rowItems.classList.contains("open");
+        }
+    });
+    document.body.addEventListener("keydown", (e) => {
+        if ((e.key === "Enter" || e.key === " ") && e.target.closest(".hamburger")) {
+            e.preventDefault();
+            e.target.click();
+        }
+    });
+});

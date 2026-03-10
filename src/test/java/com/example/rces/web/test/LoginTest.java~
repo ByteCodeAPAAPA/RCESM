@@ -1,0 +1,38 @@
+package com.example.rces.web.test;
+
+import io.qameta.allure.Feature;
+import io.qameta.allure.Owner;
+import io.qameta.allure.Severity;
+import io.qameta.allure.Story;
+import org.junit.jupiter.api.*;
+
+import static com.example.rces.web.pages.LoginPage.openLoginPage;
+import static io.qameta.allure.SeverityLevel.BLOCKER;
+
+@Feature("Web")
+@Story("Авторизация")
+@Tags({@Tag("Auth"), @Tag("ui")})
+public class LoginTest extends BaseTest {
+
+    @Test
+    @DisplayName("Неуспешный логин")
+    @Owner("ByteCodeAPAA")
+    @Severity(BLOCKER)
+    @Order(1)
+    public void failedLogin() {
+        openLoginPage()
+                .enterCredentials("Не существующий ключ");
+    }
+
+    @Test
+    @DisplayName("Успешный логин и Logout")
+    @Owner("ByteCodeAPAA")
+    @Severity(BLOCKER)
+    @Order(2)
+    public void successLoginAndLogout() {
+        openLoginPage()
+                .enterCredentials("admin")
+                .logout();
+    }
+
+}

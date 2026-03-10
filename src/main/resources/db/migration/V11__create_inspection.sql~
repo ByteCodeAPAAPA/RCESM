@@ -1,0 +1,69 @@
+CREATE TABLE IF NOT EXISTS rces.inspection
+(
+    number              INT AUTO_INCREMENT PRIMARY KEY,
+    version         BIGINT    NOT NULL DEFAULT 0,
+    sub_division_id BIGINT    NOT NULL,
+    date_inspection DATETIME,
+    type            VARCHAR(255),
+    have_second_inspection BOOLEAN DEFAULT FALSE,
+    primary_inspection_id INT,
+    second_inspection_id INT,
+    created_date    TIMESTAMP,
+    updated_date    TIMESTAMP NULL,
+    created_by      BIGINT    NOT NULL DEFAULT 1,
+    updated_by      BIGINT    NULL,
+
+    FOREIGN KEY (sub_division_id) REFERENCES rces.subdivision (id),
+    FOREIGN KEY (primary_inspection_id) REFERENCES rces.inspection (number),
+    FOREIGN KEY (second_inspection_id) REFERENCES rces.inspection (number),
+    FOREIGN KEY (created_by) REFERENCES rces.employees (id),
+    FOREIGN KEY (updated_by) REFERENCES rces.employees (id)
+);
+
+CREATE TABLE IF NOT EXISTS rces.inspection_violation
+(
+    id              BINARY(16) PRIMARY KEY,
+    version         BIGINT    NOT NULL DEFAULT 0,
+    inspection_id   INT,
+    description     VARCHAR(1000),
+    criteria        VARCHAR(255),
+    score           INT,
+    sub_division_id BIGINT    NOT NULL,
+    status          VARCHAR(255),
+    created_date    TIMESTAMP,
+    updated_date    TIMESTAMP NULL,
+    created_by      BIGINT    NOT NULL DEFAULT 1,
+    updated_by      BIGINT    NULL,
+
+    FOREIGN KEY (inspection_id) REFERENCES rces.inspection (number),
+    FOREIGN KEY (sub_division_id) REFERENCES rces.subdivision (id),
+    FOREIGN KEY (created_by) REFERENCES rces.employees (id),
+    FOREIGN KEY (updated_by) REFERENCES rces.employees (id)
+);
+
+ALTER TABLE images
+    ADD COLUMN ins_vio_id BINARY(16) NULL;
+CREATE INDEX idx_images_ins_vio ON images (ins_vio_id);
+ALTER TABLE images
+    ADD CONSTRAINT fk_images_ins_vio
+        FOREIGN KEY (ins_vio_id)
+            REFERENCES inspection_violation (id)
+            ON DELETE CASCADE;
+
+CREATE TABLE IF NOT EXISTS rces_history.inspection_history
+(
+    number              INT NOT NULL,
+    version         BIGINT     NOT NULL DEFAULT 0,
+    sub_division_id BIGINT,
+    date_inspection DATETIME,
+    type            VARCHAR(255),
+    have_second_inspection BOOLEAN,
+    primary_inspection_id INT,
+    second_inspection_id INT,
+
+    rev             BIGINT     NOT NULL,
+    revtype         TINYINT,
+
+    PRIMARY KEY (number, rev),
+    FOREIGN KEY (rev) REFERENCES rces_history.revinfo (rev)
+);

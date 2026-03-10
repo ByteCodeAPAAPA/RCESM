@@ -1,0 +1,20 @@
+class sgi extends base {
+    init() {
+        super.init();
+
+        this.createHandler("", "", createSgi)
+    }
+
+    constructor(itemsPerPage = 16) {
+        super();
+
+        this.createHandler()
+    }
+
+}
+
+init = new sgi();
+
+init.init();
+
+async function createSgi() {}

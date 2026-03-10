@@ -1,0 +1,23 @@
+package com.example.rces.repository;
+
+import com.example.rces.dto.DocumentFileDTO;
+import com.example.rces.models.DocumentFile;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
+import org.springframework.stereotype.Repository;
+
+import java.util.List;
+import java.util.UUID;
+
+@Repository
+public interface DocumentFilesRepository extends JpaRepository<DocumentFile, UUID> {
+
+    @Query("""
+        SELECT NEW com.example.rces.dto.DocumentFileDTO(e.id, e.baseFileName, e.type)
+        FROM DocumentFile e
+        WHERE e.document.id = :documentId
+    """)
+    List<DocumentFileDTO> findFileMetadataByDocumentId(@Param("documentId") UUID documentId);
+
+}

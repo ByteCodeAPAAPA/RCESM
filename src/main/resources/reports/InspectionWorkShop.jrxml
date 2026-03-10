@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created with Jaspersoft Studio version 6.15.0.final using JasperReports Library version 6.15.0-dd49bfb94918336b8321d5507193f0169ead4e95  -->
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="InspectionWorkShop" pageWidth="595" pageHeight="842" columnWidth="555" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20" uuid="93c3b343-e6f1-4be1-81b1-14ab32625742">
+	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="One Empty Record"/>
+	<subDataset name="Dataset1" uuid="5c61a4b1-8097-407b-bb00-efc4e6c81c90">
+		<queryString>
+			<![CDATA[]]>
+		</queryString>
+		<field name="criteria" class="java.lang.String"/>
+		<field name="comment" class="java.lang.String"/>
+		<field name="number" class="java.lang.String"/>
+		<field name="subDivision" class="java.lang.String"/>
+		<field name="images" class="java.util.Collection"/>
+	</subDataset>
+	<subDataset name="Dataset2" uuid="0e1a11eb-9da4-413f-a597-0b6018f295cc">
+		<queryString>
+			<![CDATA[]]>
+		</queryString>
+		<field name="name" class="java.lang.String"/>
+		<field name="image" class="java.io.InputStream"/>
+	</subDataset>
+	<queryString>
+		<![CDATA[]]>
+	</queryString>
+	<field name="now" class="java.lang.String"/>
+	<field name="subDivision" class="java.lang.String"/>
+	<field name="violation" class="java.util.Collection"/>
+	<title>
+		<band height="40">
+			<textField>
+				<reportElement x="0" y="0" width="110" height="20" uuid="02bf9676-0d65-4fa8-b72c-2400f751af2f"/>
+				<textElement textAlignment="Left">
+					<font fontName="DejaVu Sans" size="11"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{now}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="110" y="10" width="370" height="30" uuid="e91f32aa-7d46-496b-ab6a-390206aa642c"/>
+				<textElement textAlignment="Center" verticalAlignment="Top">
+					<font fontName="DejaVu Sans" size="11"/>
+				</textElement>
+				<textFieldExpression><![CDATA["Фотографии отклонений " + $F{subDivision}]]></textFieldExpression>
+			</textField>
+		</band>
+	</title>
+	<detail>
+		<band height="230" splitType="Stretch">
+			<componentElement>
+				<reportElement x="0" y="10" width="555" height="220" uuid="8882957d-e62a-4de4-8510-3f0ab5796b9d">
+					<property name="com.jaspersoft.studio.layout" value="com.jaspersoft.studio.editor.layout.VerticalRowLayout"/>
+					<property name="com.jaspersoft.studio.unit.width" value="px"/>
+				</reportElement>
+				<jr:table xmlns:jr="http://jasperreports.sourceforge.net/jasperreports/components" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports/components http://jasperreports.sourceforge.net/xsd/components.xsd">
+					<datasetRun subDataset="Dataset1" uuid="c31cd93c-4397-42f1-b060-79013b55737d">
+						<dataSourceExpression><![CDATA[new net.sf.jasperreports.engine.data.JRBeanCollectionDataSource($F{violation})]]></dataSourceExpression>
+					</datasetRun>
+					<jr:column width="555" uuid="ecb67964-813a-4679-bcfc-1fa1a30c6d79">
+						<property name="com.jaspersoft.studio.components.table.model.column.name" value="Column1"/>
+						<jr:detailCell height="220">
+							<frame>
+								<reportElement x="0" y="0" width="555" height="220" uuid="ddc0ba15-d10f-4459-a879-b97a06513dd3"/>
+								<componentElement>
+									<reportElement x="0" y="40" width="555" height="130" uuid="29b8fdc8-99bf-4aa5-89ab-d150b27d15a9">
+										<property name="com.jaspersoft.studio.layout" value="com.jaspersoft.studio.editor.layout.VerticalRowLayout"/>
+									</reportElement>
+									<jr:table>
+										<datasetRun subDataset="Dataset2" uuid="6e10c8c0-3d37-434d-a26c-ed87460a357c">
+											<dataSourceExpression><![CDATA[new net.sf.jasperreports.engine.data.JRBeanCollectionDataSource($F{images})]]></dataSourceExpression>
+										</datasetRun>
+										<jr:column width="555" uuid="8a623a6a-af86-45b5-839e-fb9b8dc53e9f">
+											<jr:detailCell height="130">
+												<property name="com.jaspersoft.studio.unit.height" value="px"/>
+												<frame>
+													<reportElement x="0" y="0" width="555" height="130" uuid="3bbce708-ec68-4c9d-befe-25352d009ac5">
+														<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
+													</reportElement>
+													<image scaleImage="FillFrame" evaluationTime="Column">
+														<reportElement x="100" y="0" width="320" height="130" uuid="edef0e0f-52e1-4fe9-911d-bfc1096fbeb3">
+															<property name="com.jaspersoft.studio.unit.height" value="px"/>
+														</reportElement>
+														<imageExpression><![CDATA[$F{image}]]></imageExpression>
+													</image>
+												</frame>
+											</jr:detailCell>
+										</jr:column>
+									</jr:table>
+								</componentElement>
+								<textField>
+									<reportElement x="0" y="0" width="498" height="20" uuid="15f184b6-dfa8-4e55-bbed-3561af1bfc5e"/>
+									<textElement textAlignment="Left" verticalAlignment="Bottom">
+										<font fontName="DejaVu Sans"/>
+									</textElement>
+									<textFieldExpression><![CDATA["Критерий: " + $F{criteria}]]></textFieldExpression>
+								</textField>
+								<textField>
+									<reportElement x="0" y="20" width="498" height="20" uuid="5a6bc391-b91f-467b-8066-af4d0caca8c4"/>
+									<textElement textAlignment="Left" verticalAlignment="Middle">
+										<font fontName="DejaVu Sans"/>
+									</textElement>
+									<textFieldExpression><![CDATA["Ответственная служба: " + $F{subDivision}]]></textFieldExpression>
+								</textField>
+								<textField>
+									<reportElement x="0" y="180" width="554" height="40" uuid="61736b03-8dea-48f7-890c-b1a7a05769cd"/>
+									<textElement textAlignment="Left" verticalAlignment="Top">
+										<font fontName="DejaVu Sans"/>
+									</textElement>
+									<textFieldExpression><![CDATA["Комментарии: " + $F{comment}]]></textFieldExpression>
+								</textField>
+							</frame>
+						</jr:detailCell>
+					</jr:column>
+				</jr:table>
+			</componentElement>
+		</band>
+	</detail>
+</jasperReport>

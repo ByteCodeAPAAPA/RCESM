@@ -1,0 +1,9 @@
+tasks.registgter("Сканирование сущностей") {
+    doLast {
+        val packageName = "com.example.rces.model"
+        val = packagePath = packageName.replace(".", "/")
+        val buildDir = project.layout.buildDirectory.get().asFile
+        val classesDir = buildDir.resolve("classes/kotlin/main")
+
+        
+}

@@ -1,0 +1,518 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created with Jaspersoft Studio version 6.15.0.final using JasperReports Library version 6.15.0-dd49bfb94918336b8321d5507193f0169ead4e95  -->
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="SpeFgis" pageWidth="595" pageHeight="842" columnWidth="555" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20" isSummaryNewPage="true" uuid="1bb365e7-7800-475d-9e98-84de4966fed4">
+	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="One Empty Record"/>
+	<queryString>
+		<![CDATA[]]>
+	</queryString>
+	<field name="miTypeNumber" class="java.lang.String"/>
+	<field name="miTypeType" class="java.lang.String"/>
+	<field name="miTypeTitle" class="java.lang.String"/>
+	<field name="miNumber" class="java.lang.String"/>
+	<field name="miModification" class="java.lang.String"/>
+	<field name="organization" class="java.lang.String"/>
+	<field name="signCipher" class="java.lang.String"/>
+	<field name="miOwner" class="java.lang.String"/>
+	<field name="vrfDate" class="java.lang.String"/>
+	<field name="validDate" class="java.lang.String"/>
+	<field name="docTitle" class="java.lang.String"/>
+	<field name="certNum" class="java.lang.String"/>
+	<field name="signPass" class="java.lang.String"/>
+	<field name="signMi" class="java.lang.String"/>
+	<field name="mieta" class="java.lang.String"/>
+	<field name="mis" class="java.lang.String"/>
+	<field name="structure" class="java.lang.String"/>
+	<field name="briefIndicator" class="java.lang.String"/>
+	<field name="suitable" class="java.lang.String"/>
+	<title>
+		<band height="52" splitType="Stretch">
+			<staticText>
+				<reportElement x="0" y="0" width="100" height="32" uuid="05d15c8c-dcae-48c6-aca0-2b5d0f08e9e2">
+					<property name="com.jaspersoft.studio.unit.height" value="px"/>
+				</reportElement>
+				<textElement>
+					<font fontName="DejaVu Sans" size="12"/>
+				</textElement>
+				<text><![CDATA[РЕЗУЛЬТАТЫ
+ПОВЕРОК СИ]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="0" y="32" width="555" height="20" uuid="90f64468-7542-4121-8a08-3127e49ea15f">
+					<property name="com.jaspersoft.studio.unit.height" value="px"/>
+					<property name="com.jaspersoft.studio.unit.width" value="px"/>
+				</reportElement>
+				<box>
+					<bottomPen lineWidth="0.25"/>
+				</box>
+				<textElement>
+					<font fontName="DejaVu Sans" size="12"/>
+				</textElement>
+				<text><![CDATA[Сведения о результатах поверки СИ]]></text>
+			</staticText>
+		</band>
+	</title>
+	<detail>
+		<band height="406" splitType="Stretch">
+			<staticText>
+				<reportElement x="0" y="0" width="280" height="20" uuid="257df468-e87b-4a17-93a4-eb056b7daeab"/>
+				<box>
+					<topPen lineWidth="0.0"/>
+					<bottomPen lineWidth="0.25"/>
+				</box>
+				<textElement verticalAlignment="Middle">
+					<font fontName="DejaVu Sans"/>
+				</textElement>
+				<text><![CDATA[Регистрационный номер типа СИ ]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="0" y="20" width="280" height="20" uuid="cda5677c-6ed7-40a1-bb7b-30866114147f"/>
+				<box>
+					<topPen lineWidth="0.0"/>
+					<bottomPen lineWidth="0.25"/>
+				</box>
+				<textElement verticalAlignment="Middle">
+					<font fontName="DejaVu Sans"/>
+				</textElement>
+				<text><![CDATA[Обозначение типа СИ]]></text>
+			</staticText>
+			<textField evaluationTime="Report" isBlankWhenNull="true">
+				<reportElement x="280" y="0" width="275" height="20" uuid="c742e1ba-1938-47b0-b752-d9fd69ba2187"/>
+				<box>
+					<bottomPen lineWidth="0.25"/>
+				</box>
+				<textElement textAlignment="Left" verticalAlignment="Middle">
+					<font fontName="DejaVu Sans"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{miTypeNumber}]]></textFieldExpression>
+			</textField>
+			<textField evaluationTime="Report" isBlankWhenNull="true">
+				<reportElement x="280" y="20" width="275" height="20" uuid="636d2a12-6485-4a3c-99bc-aa3d2b827985"/>
+				<box>
+					<bottomPen lineWidth="0.25"/>
+				</box>
+				<textElement>
+					<font fontName="DejaVu Sans"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{miTypeType}]]></textFieldExpression>
+			</textField>
+			<textField evaluationTime="Report" isBlankWhenNull="true">
+				<reportElement x="280" y="40" width="275" height="20" uuid="7b9590d7-5bb9-44f9-9825-5d556630c2a1"/>
+				<box>
+					<bottomPen lineWidth="0.25"/>
+				</box>
+				<textElement>
+					<font fontName="DejaVu Sans"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{miTypeTitle}]]></textFieldExpression>
+			</textField>
+			<textField evaluationTime="Report" isBlankWhenNull="true">
+				<reportElement x="280" y="60" width="275" height="20" uuid="e98bffe4-9879-4f1a-ac9f-6866647e8d2f"/>
+				<box>
+					<bottomPen lineWidth="0.25"/>
+				</box>
+				<textElement>
+					<font fontName="DejaVu Sans"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{miNumber}]]></textFieldExpression>
+			</textField>
+			<textField evaluationTime="Report" isBlankWhenNull="true">
+				<reportElement x="280" y="80" width="275" height="20" uuid="d517a477-c307-4ae8-ad8e-7c0b9b3ec16e"/>
+				<box>
+					<bottomPen lineWidth="0.25"/>
+				</box>
+				<textElement>
+					<font fontName="DejaVu Sans"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{miModification}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="0" y="40" width="280" height="20" uuid="b7e97890-b7a3-4c45-a1bb-2067d56bdffb"/>
+				<box>
+					<topPen lineWidth="0.0"/>
+					<bottomPen lineWidth="0.25"/>
+				</box>
+				<textElement verticalAlignment="Middle">
+					<font fontName="DejaVu Sans"/>
+				</textElement>
+				<text><![CDATA[Наименование типа СИ]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="0" y="60" width="280" height="20" uuid="fe089827-ae27-44b9-9346-f6370a2d2eae"/>
+				<box>
+					<topPen lineWidth="0.0"/>
+					<bottomPen lineWidth="0.25"/>
+				</box>
+				<textElement verticalAlignment="Middle">
+					<font fontName="DejaVu Sans"/>
+				</textElement>
+				<text><![CDATA[Заводской номер СИ]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="0" y="80" width="280" height="20" uuid="67f0a8c2-b90c-4078-9471-292168e03590"/>
+				<box>
+					<topPen lineWidth="0.0"/>
+					<bottomPen lineWidth="0.25"/>
+				</box>
+				<textElement verticalAlignment="Middle">
+					<font fontName="DejaVu Sans"/>
+				</textElement>
+				<text><![CDATA[Модификация СИ]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="0" y="100" width="280" height="30" uuid="1528fb35-f5f5-4d6b-baea-5b9a4d612368">
+					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
+				</reportElement>
+				<box>
+					<bottomPen lineWidth="0.25"/>
+				</box>
+				<textElement verticalAlignment="Bottom">
+					<font fontName="DejaVu Sans" size="14" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Сведения о поверке]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="0" y="130" width="280" height="60" uuid="5bc62a83-e735-40f2-aea2-93c83d3b4feb"/>
+				<box>
+					<topPen lineWidth="0.0"/>
+					<bottomPen lineWidth="0.25"/>
+				</box>
+				<textElement verticalAlignment="Top">
+					<font fontName="DejaVu Sans"/>
+				</textElement>
+				<text><![CDATA[Наименование организации-поверителя ]]></text>
+			</staticText>
+			<textField evaluationTime="Report" isBlankWhenNull="true">
+				<reportElement x="280" y="130" width="275" height="60" uuid="92f29199-9647-4f6c-98ab-063820db0efd"/>
+				<box>
+					<bottomPen lineWidth="0.25"/>
+				</box>
+				<textElement>
+					<font fontName="DejaVu Sans"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{organization}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="0" y="190" width="280" height="20" uuid="a5e50f9f-cda0-4ae5-a5a8-318a3244ae97"/>
+				<box>
+					<topPen lineWidth="0.0"/>
+					<bottomPen lineWidth="0.25"/>
+				</box>
+				<textElement verticalAlignment="Middle">
+					<font fontName="DejaVu Sans"/>
+				</textElement>
+				<text><![CDATA[Условный шифр знака поверки]]></text>
+			</staticText>
+			<textField evaluationTime="Report" isBlankWhenNull="true">
+				<reportElement x="280" y="190" width="275" height="20" uuid="bd87ab3e-d28a-4d95-abfb-227e1a88bdac"/>
+				<box>
+					<bottomPen lineWidth="0.25"/>
+				</box>
+				<textElement>
+					<font fontName="DejaVu Sans"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{signCipher}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="0" y="210" width="280" height="30" uuid="2dd131cc-e51a-41a5-bded-9016d13ce74d"/>
+				<box>
+					<topPen lineWidth="0.0"/>
+					<bottomPen lineWidth="0.25"/>
+				</box>
+				<textElement verticalAlignment="Top">
+					<font fontName="DejaVu Sans"/>
+				</textElement>
+				<text><![CDATA[Владелец СИ]]></text>
+			</staticText>
+			<textField evaluationTime="Report" isBlankWhenNull="true">
+				<reportElement x="280" y="210" width="275" height="30" uuid="ca66def7-c7df-4475-9dc8-4242f3921a90"/>
+				<box>
+					<bottomPen lineWidth="0.25"/>
+				</box>
+				<textElement>
+					<font fontName="DejaVu Sans"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{miOwner}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="0" y="240" width="280" height="20" uuid="d5110979-a403-4619-8ccf-6f514616ac41"/>
+				<box>
+					<topPen lineWidth="0.0"/>
+					<bottomPen lineWidth="0.25"/>
+				</box>
+				<textElement verticalAlignment="Middle">
+					<font fontName="DejaVu Sans"/>
+				</textElement>
+				<text><![CDATA[Тип поверки]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="280" y="240" width="275" height="20" uuid="660ed08b-832e-4237-ad33-3231fc86685d"/>
+				<box>
+					<topPen lineWidth="0.0"/>
+					<bottomPen lineWidth="0.25"/>
+				</box>
+				<textElement verticalAlignment="Middle">
+					<font fontName="DejaVu Sans"/>
+				</textElement>
+				<text><![CDATA[Переодическая]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="0" y="260" width="280" height="20" uuid="178bf711-6ad0-4eae-8a1d-0f0b6cca03a9"/>
+				<box>
+					<topPen lineWidth="0.0"/>
+					<bottomPen lineWidth="0.25"/>
+				</box>
+				<textElement verticalAlignment="Middle">
+					<font fontName="DejaVu Sans"/>
+				</textElement>
+				<text><![CDATA[Дата поверки СИ]]></text>
+			</staticText>
+			<textField evaluationTime="Report" isBlankWhenNull="true">
+				<reportElement x="280" y="260" width="275" height="20" uuid="17cfb1d6-a9a0-4459-82ba-82ea94f4c19c"/>
+				<box>
+					<bottomPen lineWidth="0.25"/>
+				</box>
+				<textElement>
+					<font fontName="DejaVu Sans"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{vrfDate}]]></textFieldExpression>
+			</textField>
+			<textField evaluationTime="Report" isBlankWhenNull="true">
+				<reportElement x="280" y="280" width="275" height="20" uuid="e9b96944-3d68-4cab-8b75-c2349271e5df"/>
+				<box>
+					<bottomPen lineWidth="0.25"/>
+				</box>
+				<textElement>
+					<font fontName="DejaVu Sans"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{validDate}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="0" y="280" width="280" height="20" uuid="55c7cafb-a3d7-4c26-afdd-2a9e101039df"/>
+				<box>
+					<topPen lineWidth="0.0"/>
+					<bottomPen lineWidth="0.25"/>
+				</box>
+				<textElement verticalAlignment="Middle">
+					<font fontName="DejaVu Sans"/>
+				</textElement>
+				<text><![CDATA[Поверка действительна до]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="0" y="300" width="280" height="30" uuid="dbb957c5-a599-40e1-8384-2904c54815c8"/>
+				<box>
+					<topPen lineWidth="0.0"/>
+					<bottomPen lineWidth="0.25"/>
+				</box>
+				<textElement verticalAlignment="Top">
+					<font fontName="DejaVu Sans"/>
+				</textElement>
+				<text><![CDATA[Наименование документа, на основании которого
+выполнена поверка]]></text>
+			</staticText>
+			<textField evaluationTime="Report" isBlankWhenNull="true">
+				<reportElement x="280" y="300" width="275" height="30" uuid="4c020312-ee23-4d80-83e1-9734255eeb71"/>
+				<box>
+					<bottomPen lineWidth="0.25"/>
+				</box>
+				<textElement>
+					<font fontName="DejaVu Sans"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{docTitle}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="0" y="330" width="280" height="19" uuid="2c7a3bf7-fba1-47d4-9ac0-b315832ee95c"/>
+				<box>
+					<topPen lineWidth="0.0"/>
+					<bottomPen lineWidth="0.25"/>
+				</box>
+				<textElement verticalAlignment="Top">
+					<font fontName="DejaVu Sans"/>
+				</textElement>
+				<text><![CDATA[СИ пригодно]]></text>
+			</staticText>
+			<textField evaluationTime="Report" isBlankWhenNull="true">
+				<reportElement x="280" y="330" width="275" height="19" uuid="057719c0-d5bf-4031-bd14-d3a0cb274202"/>
+				<box>
+					<bottomPen lineWidth="0.25"/>
+				</box>
+				<textElement>
+					<font fontName="DejaVu Sans"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{suitable}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="0" y="349" width="280" height="19" uuid="df1826ed-8b62-4715-a80c-dfc138d731a1"/>
+				<box>
+					<topPen lineWidth="0.0"/>
+					<bottomPen lineWidth="0.25"/>
+				</box>
+				<textElement verticalAlignment="Top">
+					<font fontName="DejaVu Sans"/>
+				</textElement>
+				<text><![CDATA[Номер свидетельства]]></text>
+			</staticText>
+			<textField evaluationTime="Report" isBlankWhenNull="true">
+				<reportElement x="280" y="349" width="275" height="19" uuid="e2a7d931-a2f8-4111-b932-81fd305c599b"/>
+				<box>
+					<bottomPen lineWidth="0.25"/>
+				</box>
+				<textElement>
+					<font fontName="DejaVu Sans"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{certNum}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="0" y="387" width="280" height="19" uuid="95e56f83-e747-4054-824f-2df6a5ec61d7"/>
+				<box>
+					<topPen lineWidth="0.0"/>
+					<bottomPen lineWidth="0.25"/>
+				</box>
+				<textElement verticalAlignment="Top">
+					<font fontName="DejaVu Sans"/>
+				</textElement>
+				<text><![CDATA[Знак поверки на СИ]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="0" y="368" width="280" height="19" uuid="2138f8c4-af87-4e07-9002-acf00b223c68"/>
+				<box>
+					<topPen lineWidth="0.0"/>
+					<bottomPen lineWidth="0.25"/>
+				</box>
+				<textElement verticalAlignment="Top">
+					<font fontName="DejaVu Sans"/>
+				</textElement>
+				<text><![CDATA[Знак поверки в паспорте]]></text>
+			</staticText>
+			<textField evaluationTime="Report" isBlankWhenNull="true">
+				<reportElement x="280" y="368" width="275" height="19" uuid="8338ae8e-468f-4d68-a618-f48c9465715b"/>
+				<box>
+					<bottomPen lineWidth="0.25"/>
+				</box>
+				<textElement>
+					<font fontName="DejaVu Sans"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{signPass}]]></textFieldExpression>
+			</textField>
+			<textField evaluationTime="Report" isBlankWhenNull="true">
+				<reportElement x="280" y="387" width="275" height="19" uuid="6948202e-5587-4be8-8158-5379fbbdf3d8"/>
+				<box>
+					<bottomPen lineWidth="0.25"/>
+				</box>
+				<textElement>
+					<font fontName="DejaVu Sans"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{signMi}]]></textFieldExpression>
+			</textField>
+		</band>
+	</detail>
+	<summary>
+		<band height="260" splitType="Stretch">
+			<staticText>
+				<reportElement x="0" y="0" width="555" height="19" uuid="1b0a3c3a-1dfb-4922-8be8-7f44aac79ebf"/>
+				<box>
+					<topPen lineWidth="0.0"/>
+					<bottomPen lineWidth="0.25"/>
+				</box>
+				<textElement verticalAlignment="Top">
+					<font fontName="DejaVu Sans" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Средства поверки]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="0" y="19" width="555" height="21" uuid="d71f5f57-acb4-401a-a884-85a7c3582d45"/>
+				<box>
+					<topPen lineWidth="0.0"/>
+					<bottomPen lineWidth="0.25"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="DejaVu Sans" isBold="false"/>
+				</textElement>
+				<text><![CDATA[Средства измерений, применяемые в качестве эталона]]></text>
+			</staticText>
+			<textField evaluationTime="Report" isBlankWhenNull="true">
+				<reportElement x="0" y="40" width="555" height="70" uuid="f0d24f29-1b6b-4436-ab44-30bbc663b4fc"/>
+				<box>
+					<bottomPen lineWidth="0.25"/>
+				</box>
+				<textElement>
+					<font fontName="DejaVu Sans"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{mieta}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="0" y="110" width="555" height="21" uuid="42ec8c57-e9de-42ad-b857-8326c7fc453a"/>
+				<box>
+					<topPen lineWidth="0.0"/>
+					<bottomPen lineWidth="0.25"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="DejaVu Sans" isBold="false"/>
+				</textElement>
+				<text><![CDATA[Средства измерений, применяемые при поверке]]></text>
+			</staticText>
+			<textField evaluationTime="Report" isBlankWhenNull="true">
+				<reportElement x="0" y="131" width="555" height="70" uuid="3f7bc058-1738-4e98-b380-736e377fee6b"/>
+				<box>
+					<bottomPen lineWidth="0.25"/>
+				</box>
+				<textElement>
+					<font fontName="DejaVu Sans"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{mis}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="0" y="201" width="555" height="21" uuid="a062317a-87fc-4846-bc61-2335f62463bc"/>
+				<box>
+					<topPen lineWidth="0.0"/>
+					<bottomPen lineWidth="0.25"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="DejaVu Sans" isBold="false"/>
+				</textElement>
+				<text><![CDATA[Доп. сведения]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="0" y="241" width="280" height="19" uuid="8237021c-4831-4b64-ab21-1b59e007fb26"/>
+				<box>
+					<topPen lineWidth="0.0"/>
+					<bottomPen lineWidth="0.25"/>
+				</box>
+				<textElement verticalAlignment="Top">
+					<font fontName="DejaVu Sans"/>
+				</textElement>
+				<text><![CDATA[Знак поверки в паспорте]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="0" y="222" width="280" height="19" uuid="00400ecb-a8f9-4810-a3c0-fd09e68248bf"/>
+				<box>
+					<topPen lineWidth="0.0"/>
+					<bottomPen lineWidth="0.25"/>
+				</box>
+				<textElement verticalAlignment="Top">
+					<font fontName="DejaVu Sans"/>
+				</textElement>
+				<text><![CDATA[Номер свидетельства]]></text>
+			</staticText>
+			<textField evaluationTime="Report" isBlankWhenNull="true">
+				<reportElement x="280" y="241" width="275" height="19" uuid="2d2336ab-3d3e-4083-b106-03f5ef86d838"/>
+				<box>
+					<bottomPen lineWidth="0.25"/>
+				</box>
+				<textElement>
+					<font fontName="DejaVu Sans"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{suitable}]]></textFieldExpression>
+			</textField>
+			<textField evaluationTime="Report" isBlankWhenNull="true">
+				<reportElement x="280" y="222" width="275" height="19" uuid="82977841-c8e4-4149-9201-eb409bcf118c"/>
+				<box>
+					<bottomPen lineWidth="0.25"/>
+				</box>
+				<textElement>
+					<font fontName="DejaVu Sans"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{briefIndicator}]]></textFieldExpression>
+			</textField>
+		</band>
+	</summary>
+</jasperReport>

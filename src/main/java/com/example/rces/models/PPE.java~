@@ -1,0 +1,11 @@
+package com.example.rces.models;
+
+import jakarta.persistence.Entity;
+import jakarta.persistence.Table;
+
+@Entity
+@Table(name = "personal_protective_equipment")
+public class SPE {
+
+
+}

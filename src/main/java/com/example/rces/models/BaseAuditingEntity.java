@@ -1,0 +1,91 @@
+package com.example.rces.models;
+
+import com.fasterxml.jackson.annotation.JsonFormat;
+import jakarta.persistence.*;
+import org.hibernate.annotations.OptimisticLock;
+import org.hibernate.envers.NotAudited;
+import org.springframework.data.annotation.CreatedBy;
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.annotation.LastModifiedBy;
+import org.springframework.data.annotation.LastModifiedDate;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
+
+import java.time.Instant;
+
+@MappedSuperclass
+@EntityListeners(AuditingEntityListener.class)
+public class BaseAuditingEntity {
+
+    @Version
+    @Column(name = "version", nullable = false)
+    @NotAudited
+    private Long version = 0L;
+
+    @CreatedDate
+    @Column(name = "created_date", updatable = false)
+    @NotAudited
+    @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
+    @OptimisticLock(excluded = true)
+    private Instant createdDate;
+
+    @LastModifiedDate
+    @Column(name = "updated_date")
+    @NotAudited
+    @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
+    @OptimisticLock(excluded = true)
+    private Instant updatedDate;
+
+    @CreatedBy
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "created_by", updatable = false, nullable = false)
+    @NotAudited
+    @OptimisticLock(excluded = true)
+    private Employee createdBy;
+
+    @LastModifiedBy
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "updated_by")
+    @NotAudited
+    @OptimisticLock(excluded = true)
+    private Employee updatedBy;
+
+    public Long getVersion() {
+        return version;
+    }
+
+    public void setVersion(Long version) {
+        this.version = version;
+    }
+
+    public Instant getCreatedDate() {
+        return createdDate;
+    }
+
+    public void setCreatedDate(Instant createdDate) {
+        this.createdDate = createdDate;
+    }
+
+    public Instant getUpdatedDate() {
+        return updatedDate;
+    }
+
+    public void setUpdatedDate(Instant updatedDate) {
+        this.updatedDate = updatedDate;
+    }
+
+    public Employee getCreatedBy() {
+        return createdBy;
+    }
+
+    public void setCreatedBy(Employee createdBy) {
+        this.createdBy = createdBy;
+    }
+
+    public Employee getUpdatedBy() {
+        return updatedBy;
+    }
+
+    public void setUpdatedBy(Employee updatedBy) {
+        this.updatedBy = updatedBy;
+    }
+}

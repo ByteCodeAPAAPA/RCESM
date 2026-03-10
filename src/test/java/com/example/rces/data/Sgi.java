@@ -1,0 +1,24 @@
+package com.example.rces.data;
+
+import com.example.rces.dto.SgiCreateDTO;
+
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+
+import static com.example.rces.utils.DateUtil.formatedDate;
+
+public class Sgi {
+
+    public static SgiCreateDTO createTestSgiDto(String uniqueEventName) {
+        return new SgiCreateDTO(
+                "Тестовый участок",
+                uniqueEventName,
+                "Тестовые действия",
+                "energy",
+                Employee.admin_user,
+                LocalDate.now(),
+                formatedDate(LocalDateTime.now()) + " ТЕСТ",
+                "");
+    }
+
+}

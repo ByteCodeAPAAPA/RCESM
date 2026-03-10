@@ -1,0 +1,130 @@
+package com.example.rces.utils;
+
+import com.example.rces.models.Requests;
+import com.example.rces.models.SGI;
+import com.example.rces.models.SPE;
+import com.example.rces.models.annotation.DisplayName;
+import com.example.rces.models.enums.Color;
+import com.example.rces.models.enums.StatusSPE;
+import jakarta.persistence.Entity;
+import org.apache.commons.lang3.ObjectUtils;
+import org.springframework.context.ApplicationContextException;
+
+import java.lang.reflect.Field;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
+import java.util.*;
+import java.util.stream.Collectors;
+
+import static com.example.rces.utils.DateUtil.formatedDate;
+
+public class ServiceUtil {
+
+    public static Color colorCalculate(SGI sgi, LocalDate date) {
+        if (sgi.getAgreed()) {
+            return Color.GREY;
+        } else if (sgi.getPlanDate() != null && !date.isBefore(sgi.getPlanDate().plusDays(2))) {
+            return Color.RED;
+        } else if (sgi.getPlanDate() != null && (date.isEqual(sgi.getPlanDate()) || !date.isBefore(sgi.getPlanDate().plusDays(1)))) {
+            return Color.YELLOW;
+        } else if (sgi.getPlanDate() != null && sgi.getExecution() != null) {
+            return Color.GREEN;
+        } else {
+            return Color.NONE;
+        }
+    }
+
+    public static Color colorCalculate(SPE spe) {
+        return switch (spe.getStatus()) {
+            case CORRECTED, WRITE_OFF -> Color.GREEN;
+            case AT_INSPECTION, REPAIR -> Color.BLUE;
+            case VERIFICATION_REQUIRED -> Color.YELLOW;
+            case EXPIRED -> Color.RED;
+            default -> Color.NONE;
+        };
+    }
+
+    public static Map<String, List<Requests>> getCreateRequestsMaster(List<Requests> requests) {
+        return Arrays.stream(Requests.Type.values())
+                .collect(Collectors.toMap(
+                        Enum::name,
+                        type -> requests.stream()
+                                .filter(req -> req.getTypeRequest() == type)
+                                .sorted(Comparator.comparing(Requests::getRequestNumber))
+                                .collect(Collectors.toList())
+                ));
+    }
+
+    public static Map<String, String> getMetadata(Class<?> clazz, Set<String> ignoredFields, Object oldEntity, Object newEntity) {
+        Map<String, String> metadata = new LinkedHashMap<>();
+        try {
+            List<Field> fieldList = Arrays.stream(clazz.getDeclaredFields())
+                    .filter(f -> !ignoredFields
+                            .contains(f.getName()))
+                    .toList();
+            for (Field field : fieldList) {
+                field.setAccessible(true);
+                String fieldName = field.getAnnotation(DisplayName.class) != null ? field.getAnnotation(DisplayName.class).value() : field.getName();
+                String oldStr = ObjectUtils.isEmpty(field.get(oldEntity))
+                        ? "не назначено"
+                        : getFieldValue(field, oldEntity);
+                String newStr = ObjectUtils.isEmpty(field.get(newEntity))
+                        ? "не назначено"
+                        : getFieldValue(field, newEntity);
+                if (!Objects.equals(oldStr, newStr)) {
+                    metadata.put(fieldName, oldStr + " -> " + newStr);
+                }
+            }
+        } catch (Exception e) {
+            throw new ApplicationContextException("Ошибка при добавлении в metadata", e);
+        }
+        return metadata;
+    }
+
+    private static String getFieldValue(Field field, Object clazz) throws Exception {
+        if (field.getType().isAnnotationPresent(Entity.class)) {
+            Field entity = clazz.getClass().getDeclaredField(field.getName());
+            entity.setAccessible(true);
+            Field nameField = entity.getType().getDeclaredField("name");
+            nameField.setAccessible(true);
+            Object value = nameField.get(entity.get(clazz));
+            return value != null ? value.toString() : "null";
+        } else if (field.getType().isEnum()) {
+            Class<?> enumClass = clazz.getClass().getDeclaredField(field.getName()).getType();
+            return enumClass.getDeclaredMethod("getName").invoke(field.get(clazz)).toString();
+        } else if (Set.class.isAssignableFrom(field.getType())) {
+            Set<?> set = (Set<?>) field.get(clazz);
+            return set.stream()
+                    .map(item -> {
+                        try {
+                            String value = item.getClass().getDeclaredMethod("getName").invoke(item).toString();
+                            return value != null && !value.isBlank() ? value : "не назначено";
+                        } catch (Exception e) {
+                            return item.toString();
+                        }
+                    }).collect(Collectors.joining(", "));
+        } else {
+            Object value = field.get(clazz);
+            if (value instanceof LocalDateTime) {
+                value = formatedDate((LocalDateTime) value);
+            }
+            return (value != null && !value.toString().isBlank()) ? value.toString() : "не назначено";
+        }
+    }
+
+    public static String buildExpiredRequestsString(List<SGI> sgiList, LocalDate today) {
+        StringBuilder requestsNumbers = new StringBuilder();
+        for (SGI sgi : sgiList.stream().sorted(Comparator.comparing(SGI::getRequestNumber)).toList()) {
+            sgi.setColor(colorCalculate(sgi, today));
+            if (sgi.getColor().equals(Color.RED)) {
+                if (!requestsNumbers.isEmpty()) {
+                    requestsNumbers.append(", ");
+                }
+                requestsNumbers.append(String.format("%d (%s)", sgi.getRequestNumber(), sgi.getDepartment().getName()));
+            }
+        }
+        return requestsNumbers.toString();
+    }
+
+}

@@ -1,0 +1,151 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+:root {
+    --primary-color: #0d6efd;
+    --primary-hover: #0b5ed7;
+    --background-color: #f8f9fa;
+    --card-background: #ffffff;
+    --text-color: #212529;
+    --muted-color: #6c757d;
+    --border-color: #dee2e6;
+    --shadow-color: rgba(0, 0, 0, 0.08);
+    --shadow-hover-color: rgba(0, 0, 0, 0.12);
+}
+
+body {
+    background-color: var(--background-color);
+    color: var(--text-color);
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.card-header {
+    background-color: var(--card-background);
+    border-bottom: 1px solid var(--border-color);
+    font-weight: 600;
+    font-size: 1.1rem;
+    padding: 1rem 1.5rem;
+}
+
+.card-body {
+    padding: 1.5rem;
+}
+
+.table {
+    border-collapse: separate;
+    border-spacing: 0;
+}
+
+.form-control:focus, .form-select:focus {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+}
+
+.page-title {
+    font-size: 2.25rem;
+    font-weight: 700;
+    margin-bottom: 1.5rem;
+}
+
+#photos-gallery .card {
+    overflow: hidden;
+    cursor: pointer;
+}
+
+#documents-list a {
+    text-decoration: none;
+    font-weight: 500;
+    color: var(--primary-color);
+}
+
+#documents-list a:hover {
+    text-decoration: underline;
+    color: var(--primary-hover);
+}
+
+.icon-text {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.choices.is-focused .choices__inner {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+}
+
+.choices__list--multiple .choices__item {
+    background-color: var(--primary-color);
+    border: 1px solid var(--primary-hover);
+    border-radius: 0.25rem;
+    font-size: 0.9em;
+}
+
+.choices__input {
+    background-color: transparent;
+}
+
+.choices__list--dropdown .choices__item--selectable.is-highlighted {
+    background-color: var(--primary-color);
+}
+
+.avatar-placeholder {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background-color: var(--primary-color);
+    color: white;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+    font-size: 1rem;
+}
+
+.employee-item {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.collapsible-header:hover {
+    opacity: 0.8;
+}
+
+@media (max-width: 768px) {
+    .icon-text span {
+        display: none;
+    }
+
+    .icon-text .bi {
+        font-size: 1.25rem;
+        margin: 0;
+    }
+
+    .icon-text.btn {
+        padding: 0.5rem 0.75rem;
+    }
+
+    .page-title {
+        font-size: 1.75rem;
+    }
+
+    .description-cell {
+        display: -webkit-box;
+        -webkit-line-clamp: 3;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        max-width: 200px;
+    }
+}

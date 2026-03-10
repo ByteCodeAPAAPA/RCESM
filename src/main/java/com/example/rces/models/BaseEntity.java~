@@ -1,0 +1,70 @@
+package com.example.rces.models;
+
+import jakarta.persistence.*;
+import jakarta.validation.constraints.NotNull;
+import org.hibernate.annotations.ColumnDefault;
+
+import java.time.Instant;
+import java.util.UUID;
+
+@MappedSuperclass
+public class BaseEntity {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.UUID)
+    @Column(name = "id", nullable = false)
+    private UUID id;
+
+    @NotNull
+    @ColumnDefault("true")
+    @Column(name = "active", nullable = false)
+    private Boolean active;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "created_by")
+    private Employee createdBy;
+        
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "updated_by")
+    private Employee updatedBy;
+
+    @NotNull
+    @Column(name = "created", columnDefinition = "DATETIME DEFAULT CURRENT_TIMESTAMP", nullable = false)
+    private Instant created;
+
+    @NotNull
+    @Column(name = "updated", columnDefinition = "DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP", nullable = false)
+    private Instant updated;
+
+    public UUID getId() {
+        return id;
+    }
+
+    public void setId(UUID id) {
+        this.id = id;
+    }
+
+    public @NotNull Boolean getActive() {
+        return active;
+    }
+
+    public void setActive(@NotNull Boolean active) {
+        this.active = active;
+    }
+
+    public @NotNull Instant getCreated() {
+        return created;
+    }
+
+    public void setCreated(@NotNull Instant created) {
+        this.created = created;
+    }
+
+    public @NotNull Instant getUpdated() {
+        return updated;
+    }
+
+    public void setUpdated(@NotNull Instant updated) {
+        this.updated = updated;
+    }
+}

@@ -1,0 +1,51 @@
+package com.example.rces.config;
+
+import org.aeonbits.owner.Config;
+import org.aeonbits.owner.ConfigFactory;
+
+public class Properties {
+
+    private static Class<? extends IProperties> getPropertySource() {
+        String env = System.getProperty("env");
+        if (env == null || env.equals("null")) {
+            return PropInterfaceTest.class;
+        } else if (env.equals("test")) {
+            return PropInterfaceTest.class;
+        } else {
+            throw new RuntimeException("Инвалид какой то параметр");
+        }
+    }
+
+    public static final IProperties PROPERTIES = ConfigFactory.create(getPropertySource());
+
+    @Config.LoadPolicy(Config.LoadType.MERGE)
+    @Config.Sources({"system:properties", "classpath:test.properties"})
+    interface PropInterfaceTest extends IProperties {
+    }
+
+    public interface IProperties extends Config {
+
+        @Key("webBrowserName")
+        String getBrowserName();
+
+        @Key("webBrowserVersion")
+        String getBrowserVersion();
+
+        @Key("webBaseUrl")
+        String getBaseUrl();
+
+        @Key("webBrowserSize")
+        String getBrowserSize();
+
+        @Key("webPageLoadTimeout")
+        Long getPageLoadTimeout();
+
+        @Key("webTimeout")
+        Long getTimeout();
+
+        @Key("webIsHeadless")
+        Boolean isHeadless();
+
+    }
+
+}

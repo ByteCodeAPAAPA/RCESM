@@ -1,0 +1,32 @@
+package com.example.rces.controller.rest;
+
+import com.example.rces.spm.services.service.BProcessDocumentStepService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+import java.io.IOException;
+import java.util.Map;
+
+@RestController
+@RequestMapping("/api/shift-task")
+public class ShiftTaskRestController {
+
+    private final BProcessDocumentStepService bProcessDocumentStepService;
+
+    @Autowired
+    public ShiftTaskRestController(BProcessDocumentStepService bProcessDocumentStepService) {
+        this.bProcessDocumentStepService = bProcessDocumentStepService;
+    }
+
+    @PostMapping("/create-document")
+    public ResponseEntity<Void> createDocument(@RequestBody Map<String, Long> payload) throws IOException, InterruptedException {
+        Long idStr = payload.get("primarydemand_list");
+        bProcessDocumentStepService.createDoc(idStr);
+        return ResponseEntity.ok().build();
+    }
+
+}

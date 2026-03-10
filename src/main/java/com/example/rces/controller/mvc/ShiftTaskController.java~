@@ -1,0 +1,48 @@
+package com.example.rces.controller.mvc;
+
+import com.example.rces.service.TokenService;
+import com.example.rces.spm.services.service.BProce;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+
+import java.io.IOException;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.util.Map;
+
+@Controller
+@RequestMapping("/shift-task")
+public class ShiftTaskController {
+
+    private final TokenService tokenService;
+    private final BProce bprocessDocumentStep;
+
+    @Autowired
+    public ShiftTaskController(TokenService tokenService, BProce bpStep) {
+        this.tokenService = tokenService;
+        this.bpStep = bpStep;
+    }
+
+    @GetMapping("/task")
+    public String task(Model model) throws IOException, InterruptedException {
+        model.addAttribute("token", tokenService.getToken("api", "123456"));
+        model.addAttribute("mlmNode", bpStep.getMlmNodeList());
+        model.addAttribute("valueTaskListSize", bpStep.componentList().size());
+        model.addAttribute("valueFinishedListSize", bpStep.componentFinishedList().size());
+        model.addAttribute("finished", bpStep.componentFinishedList());
+        model.addAttribute("taskList", bpStep.componentList());
+        model.addAttribute("dateStart", LocalDate.now().format(DateTimeFormatter.ofPattern("dd/MM/yyyy")));
+        return "task";
+    }
+
+    @PostMapping("/create-document")
+    public void createDocument(@RequestBody Map<String, Long> payload) throws IOException, InterruptedException {
+        Long idStr = payload.get("primarydemand_list");
+        bpStep.createDoc(idStr);
+    }
+}

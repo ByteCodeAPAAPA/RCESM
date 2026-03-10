@@ -1,0 +1,15 @@
+package com.example.rces.api.test;
+
+import io.qameta.allure.Feature;
+import io.qameta.allure.Story;
+import org.junit.jupiter.api.Tag;
+import org.junit.jupiter.api.Tags;
+
+@Feature("Api")
+@Story("Манипуляции с мероприятиями")
+@Tags({@Tag("CommentController"), @Tag("Api"), @Tag("Dummy")})
+public class sgiTest {
+
+
+
+}

@@ -1,0 +1,26 @@
+package com.example.rces.web.pages;
+
+import io.qameta.allure.Step;
+
+import static com.codeborne.selenide.Selenide.$;
+import static com.codeborne.selenide.Selenide.open;
+
+public interface ILogout {
+
+    String logoutButton = "#logoutButton";
+
+    @Step("Выйти из учётной записи")
+    default void logout() {
+        if ($(logoutButton).isDisplayed()) {
+            $(logoutButton).click();
+        } else {
+            performLogout();
+        }
+    }
+
+    @Step("Выполнить выход через URL /logout")
+    default void performLogout() {
+        open("/logout");
+    }
+
+}

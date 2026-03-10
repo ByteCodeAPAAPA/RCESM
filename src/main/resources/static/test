@@ -1,0 +1,7 @@
+ALTER TABLE fact_execution_sgi
+DROP FOREIGN KEY FKk6duvows943ji23e9j9lvbhjo;
+
+ALTER TABLE fact_execution_sgi
+ADD CONSTRAINT FKk6duvows943ji23e9j9lvbhjo
+FOREIGN KEY (sgi_id) REFERENCES plan_sgi(id)
+ON DELETE CASCADE;  -- или ON DELETE SET NULL

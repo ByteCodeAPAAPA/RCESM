@@ -1,0 +1,410 @@
+.btn-processing {
+    position: relative;
+    overflow: hidden;
+}
+
+.btn-processing::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+    animation: shimmer 1.5s infinite;
+}
+
+@keyframes shimmer {
+    0% { left: -100%; }
+    100% { left: 100%; }
+}
+
+#submitBtn:disabled {
+    opacity: 0.8;
+    cursor: not-allowed;
+}
+.attached-photo {
+    max-width: 150px;
+    max-height: 150px;
+    object-fit: cover;
+    cursor: pointer;
+}
+.custom-modal-width {
+    width: 800px !important;
+    max-width: 90% !important;
+}
+input.readonly-scroll {
+    overflow: auto;
+    white-space: nowrap; /* или 'pre-wrap' для многострочного текста */
+}
+#fullPhoto {
+    max-width: 90%;
+    max-height: 80vh;
+}
+#modalSearchInput {
+    transition: opacity 0.3s ease, visibility 0.3s ease;
+    opacity: 0;
+    visibility: hidden;
+    height: 0;
+    overflow: hidden;
+    margin: 0;
+    padding: 0;
+    border: 0;
+}
+
+#modalSearchInput.visible {
+    opacity: 1;
+    visibility: visible;
+    height: auto;
+    padding: 0.375rem 0.75rem;
+    margin-bottom: 0.5rem;
+    border: 1px solid #ced4da;
+}
+#employeeName,#mlmNodeName,#itemName {
+    pointer-events: none;
+    background-color: #f8f9fa;
+}
+
+/* Общие стили */
+body {
+    background: #f0f2f5;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    color: #333;
+}
+
+/* Контейнеры */
+.container {
+    max-width: 900px;
+}
+
+/* Формы */
+form {
+    background: #ffffff;
+    padding: 30px 40px;
+    border-radius: 12px;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+}
+
+/* Заголовки */
+h2.mb-4 {
+    font-weight: 700;
+    color: #2c3e50;
+    margin-bottom: 30px !important;
+    text-align: center;
+    letter-spacing: 1.2px;
+}
+
+/* Метки */
+.form-label {
+    font-weight: 600;
+    color: #34495e;
+    margin-bottom: 8px;
+}
+
+/* Инпуты */
+.form-control {
+    border: 1.8px solid #ced4da;
+    border-radius: 8px;
+    padding: 10px 15px;
+    font-size: 1rem;
+    transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.form-control:focus {
+    border-color: #4a90e2;
+    box-shadow: 0 0 8px rgba(74, 144, 226, 0.4);
+    outline: none;
+}
+
+/* Кнопки */
+.btn {
+    font-weight: 600;
+    border-radius: 8px;
+    padding: 10px 20px;
+    transition: background-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.btn-success {
+    background-color: #28a745;
+    border-color: #28a745;
+    box-shadow: 0 4px 12px rgba(40, 167, 69, 0.4);
+}
+
+.btn-success:hover {
+    background-color: #218838;
+    border-color: #1e7e34;
+    box-shadow: 0 6px 20px rgba(33, 136, 56, 0.6);
+}
+
+.btn-outline-primary {
+    color: #4a90e2;
+    border-color: #4a90e2;
+}
+
+.btn-outline-primary:hover {
+    background-color: #4a90e2;
+    color: #fff;
+    box-shadow: 0 4px 15px rgba(74, 144, 226, 0.5);
+}
+
+/* Кнопки вторичные */
+.btn-outline-secondary {
+    color: #6c757d;
+    border-color: #6c757d;
+}
+
+.btn-outline-secondary:hover {
+    background-color: #6c757d;
+    color: #fff;
+}
+
+/* Карточки */
+.card {
+    border-radius: 12px;
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.08);
+    border: none;
+}
+
+.card-header {
+    font-weight: 700;
+    font-size: 1.1rem;
+    letter-spacing: 0.8px;
+    border-top-left-radius: 12px;
+    border-top-right-radius: 12px;
+}
+
+/* Модальные окна */
+.modal-content {
+    border-radius: 15px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+}
+
+.modal-header {
+    border-bottom: 2px solid #4a90e2;
+    background-color: #f7f9fc;
+    font-weight: 700;
+    color: #2c3e50;
+}
+
+.modal-title {
+    font-size: 1.3rem;
+}
+
+.modal-footer {
+    border-top: 1px solid #dee2e6;
+}
+
+/* Списки в модальном окне */
+.modal-list .list-group-item {
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.modal-list .list-group-item:hover {
+    background-color: #e6f0ff;
+}
+
+.modal-list .list-group-item.active {
+    background-color: #4a90e2;
+    color: white;
+    font-weight: 600;
+}
+
+/* Прикрепленные фото */
+#photoContainer img.attached-photo {
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    transition: transform 0.3s ease;
+}
+
+#photoContainer img.attached-photo:hover {
+    transform: scale(1.05);
+    box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+}
+
+/* Текстовые области */
+textarea.form-control {
+    border-radius: 10px;
+    font-size: 1rem;
+    padding: 12px 15px;
+    transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+textarea.form-control:focus {
+    border-color: #4a90e2;
+    box-shadow: 0 0 10px rgba(74, 144, 226, 0.5);
+}
+
+/* Инпуты только для чтения */
+input[readonly], textarea[readonly] {
+    background-color: #e9ecef;
+    color: #495057;
+    cursor: not-allowed;
+}
+
+/* Плавный переход для readonly-scroll */
+input.readonly-scroll {
+    transition: background-color 0.3s ease;
+}
+
+/* Добавим плавность для кнопок в форме */
+.d-grid button {
+    box-shadow: 0 6px 18px rgba(40, 167, 69, 0.4);
+}
+
+/* Улучшаем внешний вид переключателя */
+.form-check-input:checked {
+    background-color: #4a90e2;
+    border-color: #4a90e2;
+}
+
+/* Стили для input-group кнопок */
+.input-group .btn {
+    border-top-left-radius: 0;
+    border-bottom-left-radius: 0;
+}
+
+/* Мелкие доработки */
+.mb-3 {
+    margin-bottom: 1.25rem !important;
+}
+
+.mt-5 {
+    margin-top: 3rem !important;
+}
+
+.mb-5 {
+    margin-bottom: 3rem !important;
+}
+
+.d-flex.flex-wrap.gap-2.mb-4 > * {
+    flex-grow: 1;
+    min-width: 140px;
+}
+
+/* Улучшаем вид placeholder */
+::placeholder {
+    color: #a9a9a9;
+    opacity: 1;
+}
+
+/* Селект */
+.form-select {
+    border-radius: 8px;
+    border: 1.8px solid #ced4da;
+    padding: 10px 15px;
+    font-size: 1rem;
+    transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.form-select:focus {
+    border-color: #4a90e2;
+    box-shadow: 0 0 8px rgba(74, 144, 226, 0.4);
+    outline: none;
+}
+.delete-photo-btn {
+    display: inline-block;
+    margin-top: 5px;
+    padding: 5px 10px;
+    background-color: red; /* красный фон */
+    color: white;             /* белый текст */
+    border: none;
+    border-radius: 3px;
+    cursor: pointer;
+    font-weight: bold;
+    font-size: 14px;
+}
+
+.delete-photo-btn:hover {
+    background-color: darkred; /* темно-красный при наведении */
+}
+.preview-item {
+    position: relative;
+    text-align: center;
+}
+
+.preview-item img {
+    object-fit: cover;
+    border: 2px solid #dee2e6;
+    border-radius: 0.375rem;
+}
+
+.preview-item .remove-btn {
+    position: absolute;
+    top: 5px;
+    right: 5px;
+    background: rgba(255, 255, 255, 0.8);
+    border: none;
+    border-radius: 50%;
+    width: 24px;
+    height: 24px;
+    font-size: 14px;
+    cursor: pointer;
+}
+
+/* Стили для мобильных устройств */
+@media (max-width: 768px) {
+    .preview-item img {
+        max-width: 120px !important;
+        max-height: 120px !important;
+    }
+
+    #imagePreview {
+        text-align: center;
+    }
+}
+.cursor-pointer {
+    cursor: pointer;
+}
+
+.carousel-item img {
+    border-radius: 0.375rem;
+}
+
+.card-img-top {
+    transition: transform 0.2s;
+}
+
+.card-img-top:hover {
+    transform: scale(1.05);
+}
+
+/* Стили для превью в таблице */
+.btn-group .btn-sm {
+    padding: 0.25rem 0.5rem;
+    font-size: 0.875rem;
+}
+.request-history-mobile {
+    max-width: 100%;
+}
+
+.history-card {
+    border: 1px solid #e9ecef;
+    border-radius: 8px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+
+.history-card .card-body {
+    padding: 1rem;
+}
+
+@media (max-width: 375px) {
+    .history-card .card-body {
+        padding: 0.75rem;
+    }
+
+    .btn-sm {
+        padding: 0.25rem 0.5rem;
+        font-size: 0.75rem;
+    }
+}
+
+.text-break {
+    word-break: break-word;
+    line-height: 1.4;
+}
+
+.history-card .mb-2 {
+    margin-bottom: 0.75rem !important;
+}

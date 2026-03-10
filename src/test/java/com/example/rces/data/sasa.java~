@@ -1,0 +1,54 @@
+package com.example.rces.data;
+
+public abstract class sasa {
+
+    public static String sasasa;
+
+    private final String lll = "13";
+
+
+    public void sasa(){
+
+    }
+
+    public abstract void sasf ();
+
+}
+
+class sasass extends sasa implements ff{
+
+    public static String adda;
+
+    @Override
+    public void sasa() {
+        super.sasa();
+
+    }
+
+    @Override
+    public void sasf() {
+        sasaa();
+    }
+
+    @Override
+    public void lsas() {
+        this.sasa();
+    }
+}
+
+
+interface ff {
+
+    String sasaf = "";
+
+    private void g () {
+        
+    }
+
+    default void sasaa(){
+
+    }
+
+    void lsas();
+
+}

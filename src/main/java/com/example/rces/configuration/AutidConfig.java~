@@ -1,0 +1,39 @@
+package com.example.rces.configuration;
+
+import com.example.rces.models.BaseEnversUtilEntity;
+import com.example.rces.models.Employee;
+import com.example.rces.service.EmployeeService;
+import org.hibernate.Session;
+import org.hibernate.envers.RevisionListener;
+import org.springframework.beans.factory.annotation.Autowired;
+
+public class AutidConfig implements RevisionListener {
+
+    @Autowired
+    private EmployeeService employeeService;
+
+    @Override
+    public void newRevision(Object revisionEntity) {
+        BaseEnversUtilEntity revision = (BaseEnversUtilEntity) revisionEntity;
+        Employee currentUser = employeeService.getCurrentUser();
+
+        // Получаем текущую сессию и определяем тип операции
+        Session session = getCurrentSession();
+        String operationType = determineOperationType(session);
+
+        revision.setOperationType(operationType);
+
+        if ("INSERT".equals(operationType)) {
+            revision.setCreatedBy(currentUser);
+        } else {
+            revision.setUpdatedBy(currentUser);
+        }
+    }
+
+    private String determineOperationType(Session session) {
+        // Сложная логика определения типа операции
+        // Этот подход не рекомендуется из-за сложности
+        return "UPDATE"; // по умолчанию
+    }
+
+}

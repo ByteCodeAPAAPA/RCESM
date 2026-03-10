@@ -1,0 +1,39 @@
+version: '3.8'
+
+services:
+  mysql:
+    image: mysql:8.0
+    environment:
+      MYSQL_DATABASE: rces
+      MYSQL_USER: rces_user
+      MYSQL_PASSWORD: rces_password
+      MYSQL_ROOT_PASSWORD: root_password
+    ports:
+      - "3307:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+
+  postgres-spm:
+    image: postgres:14
+    environment:
+      POSTGRES_DB: prod_bms_scmo
+      POSTGRES_USER: spm_user
+      POSTGRES_PASSWORD: spm_password
+    ports:
+      - "5433:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  app:
+    build: .
+    ports:
+      - "2520:2520"
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+    depends_on:
+      - mysql
+      - postgres-spm
+
+volumes:
+  mysql_data:
+  postgres_data:

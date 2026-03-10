@@ -1,0 +1,21 @@
+package com.example.rces.web.test;
+
+import io.qameta.allure.Feature;
+import io.qameta.allure.Story;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Tag;
+import org.junit.jupiter.api.Tags;
+import org.junit.jupiter.api.Test;
+
+@Feature("Web")
+@Story("Меню")
+@Tags({@Tag("Menu"), @Tag("Web")})
+public class MenuTest extends BaseTest {
+
+    @Test
+    @DisplayName("Успешный переход в меню")
+    public void test01() {
+
+    }
+
+}

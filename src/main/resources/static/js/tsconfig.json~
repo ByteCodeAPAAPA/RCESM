@@ -1,0 +1,9 @@
+{
+  "include": [
+    "**/*.ts"
+  ],
+  "compilerOptions": {
+    "module": "None",
+    "target": "ES6"
+  }
+}

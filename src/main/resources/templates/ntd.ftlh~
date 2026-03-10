@@ -1,0 +1,155 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Журнал учета НТД</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet"
+          integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
+    <link rel="stylesheet" href="/css/base.css">
+    <link rel="stylesheet" href="/css/ntd.css">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="/js/base/dialog.js"></script>
+    <script src="/js/base/cache.js"></script>
+    <script src="/js/base/base.js"></script>
+    <script src="/js/ntd.js"></script>
+</head>
+<body>
+<div class="container">
+    <header>
+        <div class="title">
+            <h1>Нормативно-техническая документация ООО «БорМаш»</h1>
+        </div>
+        <div class="toolbar">
+            <div class="search-box">
+                <i class="fas fa-search"></i>
+                <input type="text" id="searchInput" placeholder="Поиск документации...">
+            </div>
+            <div class="tool edit tooltip-trigger" id="edit-button" data-description="Переключить режим редактирования">
+                <button>
+                    <i class="fas fa-pencil-alt"></i>
+                </button>
+            </div>
+            <div class="tool save tooltip-trigger" id="save-button" data-description="Сохранить записи">
+                <button>
+                    <i class="fas fa-floppy-disk"></i>
+                </button>
+            </div>
+            <div class="tool create tooltip-trigger" id="create-button" data-description="Добавить запись">
+                <button>
+                    <i class="fas fa-plus"></i>
+                </button>
+            </div>
+        </div>
+    </header>
+    <div class="data-container">
+        <div class="table-header">
+            <div class="table-header-cell" style="width: var(--name);">
+                Наименование
+            </div>
+            <div class="table-header-cell" style="width: var(--type);">
+                Тип
+            </div>
+            <div class="table-header-cell" style="width: var(--dateVerification);">
+                Дата последней поверки
+            </div>
+            <div class="table-header-cell" style="width: var(--file);">
+                Документ
+            </div>
+            <div class="table-header-cell" style="width: var(--references);">
+                Связи
+            </div>
+            <div class="table-header-cell" style="width: var(--comment);">
+                Примечание
+            </div>
+        </div>
+        <div class="table-body">
+        </div>
+    </div>
+</div>
+
+<dialog id="create-dialog">
+    <div class="modal-header">
+        <h2 class="modal-title">Создание документации</h2>
+    </div>
+
+    <form id="ntdForm" enctype="multipart/form-data">
+        <div class="modal-body">
+            <div class="form-group">
+                <label class="form-label">Наименование</label>
+                <input type="text" class="form-control" name="name" required>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Тип</label>
+                <textarea class="form-control" name="type" required></textarea>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Дата последней поверки</label>
+                <input type="date" class="form-control" name="dateVerification">
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Комментарий</label>
+                <textarea class="form-control" name="comment"></textarea>
+            </div>
+
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-primary" id="cancelButton" onclick="document.getElementById('create-dialog').close()">Отмена</button>
+            <button type="submit" class="btn btn-primary" id="createBtn">Создать</button>
+        </div>
+    </form>
+
+</dialog>
+<dialog id="documentDialog">
+    <div class="dialog-container">
+        <div class="dialog-container-header">
+            <div class="dialog-name">Окно работы с документом</div>
+        </div>
+        <div class="dialog-container-content">
+            <div class="dialog-content-header">
+                <div class="dialog-content-header-column col-450">Наименование файла</div>
+                <div class="dialog-content-header-column col-100">Тип</div>
+                <div style="text-align: center;" class="dialog-content-header-column col-100">Файл</div>
+            </div>
+            <div class="dialog-content-rows">
+            </div>
+        </div>
+        <div class="dialog-container-footer">
+            <button class="dialog-btn" id="cancelButton">
+                Отмена
+            </button>
+        </div>
+    </div>
+</dialog>
+<dialog id="referencesDialog">
+    <div class="dialog-container">
+        <div class="dialog-container-header">
+            <div class="dialog-name">Окно работы со связями</div>
+        </div>
+        <div class="dialog-container-content">
+            <div class="dialog-content-header">
+                <div class="dialog-content-header-column" style="width: 500px">Наименование</div>
+                <div class="dialog-content-header-column" style="width: 150px">Тип</div>
+                <div class="dialog-content-header-column" style="width: 200px">Дата последней поверки</div>
+                <div class="dialog-content-header-column" style="width: 100px">Документ</div>
+                <div class="dialog-content-header-column" style="width: 500px">Комментарий</div>
+                <div style="border-right: none; width: 100px" class="dialog-content-header-column">Связано</div>
+            </div>
+            <div class="dialog-content-rows">
+            </div>
+        </div>
+        <div class="dialog-container-footer">
+            <button class="dialog-btn" id="cancelButton">
+                Выйти
+            </button>
+        </div>
+    </div>
+</dialog>
+</body>
+</html>

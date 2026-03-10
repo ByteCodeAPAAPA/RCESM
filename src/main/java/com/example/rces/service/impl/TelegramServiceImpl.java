@@ -1,0 +1,100 @@
+package com.example.rces.service.impl;
+
+import com.example.rces.models.Employee;
+import com.example.rces.models.Requests;
+import com.example.rces.service.TelegramService;
+import com.example.rces.utils.telegram.ChatIdResolver;
+import com.example.rces.utils.telegram.MessageBuilder;
+import com.example.rces.utils.telegram.event.TelegramRegularEvent;
+import com.example.rces.utils.telegram.event.TelegramRequestEvent;
+import com.example.rces.utils.telegram.event.TelegramSgiEvent;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.ApplicationContextException;
+import org.springframework.context.event.EventListener;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.telegram.telegrambots.bots.TelegramLongPollingBot;
+import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
+import org.telegram.telegrambots.meta.api.objects.Message;
+import org.telegram.telegrambots.meta.api.objects.Update;
+import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
+
+@Service
+@Transactional(transactionManager = "primaryTransactionManager")
+public class TelegramServiceImpl extends TelegramLongPollingBot implements TelegramService {
+
+    Logger log = LoggerFactory.getLogger(TelegramServiceImpl.class);
+
+    private final MessageBuilder messageBuilder;
+
+    @Value("${telegram.bot.token}")
+    private String botToken;
+
+    @Autowired
+    public TelegramServiceImpl(
+            @Value("${telegram.chat.constructor.id}") String constructorGroupChatId,
+            @Value("${telegram.chat.technologist.id}") String technologistGroupChatId,
+            @Value("${url.mobile}") String urlMobile) {
+        this.messageBuilder = new MessageBuilder(urlMobile, new ChatIdResolver(constructorGroupChatId, technologistGroupChatId));
+    }
+
+    @Override
+    @EventListener
+    public void sendMessageForSGI(TelegramSgiEvent sgiEvent) {
+        SendMessage sendMessage = new SendMessage();
+        messageBuilder.buildRequestMessage(sgiEvent.getSgi(), sgiEvent.getMessageType(), sendMessage);
+        sendMessage.setChatId(sgiEvent.getChatId());
+        try {
+            execute(sendMessage);
+        } catch (Exception e) {
+            throw new ApplicationContextException("Ошибка при отправке сообщения в ТГ - СГИ " + e.getMessage());
+        }
+    }
+
+    @Override
+    @EventListener
+    public Message sendMessageForRequest(TelegramRequestEvent requestEvent) {
+        SendMessage sendMessage = new SendMessage();
+        Employee updaterEmployee = requestEvent.getUpdaterEmployee();
+        Requests request = requestEvent.getRequest();
+        messageBuilder.buildRequestMessage(request, requestEvent.getMessageType(), sendMessage, updaterEmployee);
+        try {
+            return execute(sendMessage);
+        } catch (Exception e) {
+            log.error("Ошибка при отправке сообщения в Telegram: {}", e.getMessage(), e);
+            return null;
+        }
+    }
+
+    @Override
+    @EventListener
+    public void sendRegularMessage(TelegramRegularEvent regularEvent) {
+        SendMessage sendMessage = new SendMessage();
+        sendMessage.setChatId(regularEvent.getChatId());
+        sendMessage.setText(regularEvent.getMessage());
+        try {
+            execute(sendMessage);
+        } catch (TelegramApiException e) {
+            throw new ApplicationContextException(String.format("Ошибка при отправке регулярного сообщения: %s",
+                    regularEvent.getEntity().getClass().getSimpleName()) + e.getMessage());
+        }
+    }
+
+    @Override
+    public String getBotUsername() {
+        return "BormashRequestBot";
+    }
+
+    @Override
+    public String getBotToken() {
+        return botToken;
+    }
+
+    @Override
+    public void onUpdateReceived(Update update) {
+
+    }
+}

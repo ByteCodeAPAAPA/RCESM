@@ -1,0 +1,94 @@
+package com.example.rces.api.steps;
+
+import com.example.rces.api.test.BaseApiTest;
+import com.example.rces.dto.SgiCreateDTO;
+import com.example.rces.dto.SgiDTO;
+import io.qameta.allure.Step;
+import io.restassured.builder.MultiPartSpecBuilder;
+import org.apache.http.HttpStatus;
+
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.util.UUID;
+
+import static io.restassured.RestAssured.given;
+
+public class SgiControllerSteps {
+
+    @Step("Создать тестовое мероприятие")
+    public static SgiDTO createSGI(SgiCreateDTO newSGI) {
+        return given()
+                .spec(BaseApiTest.getAuthorizedRequestSpec())
+                .basePath("/api/sgi/create-sgi")
+                .contentType("multipart/form-data")
+                .multiPart(new MultiPartSpecBuilder(newSGI)
+                        .controlName("data")
+                        .mimeType("application/json")
+                        .charset("UTF-8")
+                        .build())
+                .post()
+                .then().log().all()
+                .statusCode(200)
+                .extract().as(SgiDTO.class);
+    }
+
+    @Step("Добавить плановый срок к мероприятию")
+    public static SgiDTO addPlanDate(SgiDTO dto) {
+        return given()
+                .spec(BaseApiTest.getAuthorizedRequestSpec())
+                .basePath("/api/sgi/update")
+                .param("id", dto.getId())
+                .param("workcenter", dto.getWorkcenter())
+                .param("event", dto.getEvent())
+                .param("actions", dto.getActions())
+                .param("department", dto.getDepartment())
+                .param("desiredDate", dto.getDesiredDate().format(DateTimeFormatter.ISO_LOCAL_DATE))
+                .param("planDate", LocalDate.now().format(DateTimeFormatter.ISO_LOCAL_DATE))
+                .param("employee", dto.getEmployee().getName())
+                .param("note", dto.getNote())
+                .param("factExecutionSGIBool", false)
+                .patch()
+                .then().log().all()
+                .statusCode(200)
+                .extract().as(SgiDTO.class);
+    }
+
+    @Step("Создать факт выполнения мероприятия")
+    public static SgiDTO addFactExecution(UUID id, LocalDate executionDate, String report) {
+        return given()
+                .spec(BaseApiTest.getAuthorizedRequestSpec())
+                .basePath("/api/sgi/update")
+                .param("id", id)
+                .param("factExecutionSGIBool", true)
+                .param("executionDate", executionDate.format(DateTimeFormatter.ISO_LOCAL_DATE))
+                .param("report", report)
+                .patch()
+                .then().log().all()
+                .statusCode(HttpStatus.SC_OK)
+                .extract().as(SgiDTO.class);
+    }
+
+    @Step("Согласовать/Отменить согласование мероприятия")
+    public static Boolean agreeEvent(UUID id, boolean agree) {
+        return given()
+                .spec(BaseApiTest.getAuthorizedRequestSpec())
+                .basePath("/api/sgi/agree")
+                .param("id", id)
+                .param("agreed", agree)
+                .patch()
+                .then().log().all()
+                .statusCode(HttpStatus.SC_OK)
+                .extract().as(Boolean.class);
+    }
+
+    @Step("Удалить мероприятие по id")
+    public static void deleteSgiById(UUID id) {
+        given()
+                .spec(BaseApiTest.getAuthorizedRequestSpec())
+                .basePath("/api/sgi/delete/{id}")
+                .pathParam("id", id)
+                .delete()
+                .then().log().all()
+                .statusCode(HttpStatus.SC_NO_CONTENT);
+    }
+}

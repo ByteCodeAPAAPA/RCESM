@@ -1,0 +1,218 @@
+/* CSS-переменные для цветов и размеров */
+:root {
+    --primary-color: #007bff;
+    --primary-hover-color: #0056b3;
+    --success-color: #28a745;
+    --success-hover-color: #218838;
+    --background-color: #ffffff;
+    --border-color: #e0e0e0;
+    --text-color: #333;
+    --text-light-color: #555;
+    --shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    --radius: 12px;
+    --transition: all 0.3s ease;
+}
+
+/* Основные стили для формы */
+.modern-form {
+    max-width: 600px;
+    margin: 20px auto;
+    padding: 20px;
+    background: var(--background-color);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    font-family: 'Arial', sans-serif;
+}
+
+.modern-form h2 {
+    margin-top: 20px;
+    margin-bottom: 10px;
+    font-size: 18px;
+    color: var(--text-color);
+}
+
+/* Группы полей */
+.form-group {
+    margin-bottom: 20px;
+}
+
+.form-group label {
+    display: block;
+    font-weight: 600;
+    color: var(--text-color);
+    margin-bottom: 8px;
+}
+
+/* Поля ввода */
+.form-input {
+    width: 100%;
+    padding: 10px 20px;
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius);
+    font-size: 14px;
+    color: var(--text-color);
+    background: #f9f9f9;
+    margin-bottom: 10px;
+    transition: var(--transition);
+}
+
+.form-input:focus {
+    border-color: var(--primary-color);
+    outline: none;
+}
+
+/* Кнопки */
+.btn-modern {
+    padding: 10px 20px;
+    background: var(--primary-color);
+    color: #fff;
+    border: none;
+    border-radius: var(--radius);
+    cursor: pointer;
+    font-size: 14px;
+    transition: var(--transition);
+}
+
+.btn-modern:hover {
+    background: var(--primary-hover-color);
+}
+
+.submit-btn {
+    width: 100%;
+    padding: 12px;
+    font-size: 16px;
+    background: var(--success-color);
+}
+
+.submit-btn:hover {
+    background: var(--success-hover-color);
+}
+
+/* Группа для загрузки фото */
+.photo-group {
+    margin-top: 20px;
+}
+
+.photo-group label {
+    display: block;
+    font-weight: 600;
+    color: var(--text-color);
+    margin-bottom: 8px;
+}
+
+.add-photo {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius);
+    background: #f9f9f9;
+    font-size: 14px;
+    transition: var(--transition);
+}
+
+.add-photo:focus {
+    border-color: var(--primary-color);
+    outline: none;
+}
+
+/* Модальное окно */
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    justify-content: center;
+    align-items: center;
+    animation: fadeIn 0.3s ease;
+}
+
+.modal-content {
+    background: var(--background-color);
+    padding: 20px;
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    max-width: 400px;
+    width: 100%;
+}
+
+.modal-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.modal-list li {
+    padding: 10px;
+    border-bottom: 1px solid var(--border-color);
+    cursor: pointer;
+    transition: var(--transition);
+}
+
+.modal-list li:hover {
+    background: #f1f1f1;
+}
+
+.close {
+    float: right;
+    font-size: 24px;
+    cursor: pointer;
+    color: #666;
+    transition: var(--transition);
+}
+
+.close:hover {
+    color: var(--text-color);
+}
+
+/* Уведомления */
+#notification-container {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 1000;
+}
+
+.notification {
+    background-color: var(--success-color);
+    color: white;
+    padding: 15px;
+    margin-bottom: 10px;
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    opacity: 0;
+    transition: opacity 0.5s ease-in-out;
+}
+
+.notification.show {
+    opacity: 1;
+}
+
+/* Анимация для модального окна */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+/* Адаптивность */
+@media (max-width: 768px) {
+    .modern-form {
+        padding: 15px;
+    }
+
+    .modal-content {
+        max-width: 90%;
+    }
+
+    .btn-modern {
+        width: 100%;
+        margin-bottom: 10px;
+    }
+}

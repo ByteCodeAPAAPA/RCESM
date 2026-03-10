@@ -1,0 +1,85 @@
+class base {
+    locks = new Map();
+    handlers = {};
+    selectedRows = [];
+    localCache = {};
+
+    constructor() {
+        this.init();
+    }
+
+    init() {
+        $(() => {
+            this.initializeHandlers();
+        });
+    }
+
+    initializeHandlers() {
+        this.handlers.forEach(({event, selector, handler}) => {
+            $(document).on(event, selector, handler);
+        });
+    }
+
+    //Блокировка параллельного выполнения
+    lock = (fn) => async (...args) => {
+        const key = fn.name;
+        if (this.locks.get(key)) return;
+
+        this.locks.set(key, true);
+        try {
+            return await fn(...args);
+        } finally {
+            this.locks.set(key, false);
+        }
+    };
+
+    formatDate(dateString) {
+        if (!dateString) return "";
+        const date = new Date(dateString);
+        return date.toLocaleDateString('ru-RU');
+    }
+
+    createHandler(event, selector, handler, locked = false) {
+        this.handlers.push({
+            event,
+            selector,
+            handler: locked ? this.lock(handler) : handler,
+        });
+    }
+
+}
+
+window.cache = {
+    endpoints: {
+        employee: '/api/employees',
+        subDivision: '/api/sub-divisions'
+    },
+
+    get: async function (key) {
+        const cached = sessionStorage.getItem(key);
+        if (cached) {
+            return Promise.resolve(JSON.parse(cached));
+        }
+
+        if (this.endpoints[key]) {
+            return await fetch(this.endpoints[key])
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`Api запрос завершен с ошибкой: ${response.status}`);
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    this.set(key, data);
+                    return data;
+                });
+        }
+
+        return Promise.reject(new Error(`Такого api нет в кеше: ${key}`));
+    },
+
+    set: function (key, data) {
+        sessionStorage.setItem(key, JSON.stringify(data));
+        return this;
+    }
+};

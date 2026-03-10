@@ -1,0 +1,247 @@
+.mobile-cards-container {
+    display: none;
+    padding: 15px;
+}
+
+.request-card {
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    margin-bottom: 15px;
+    overflow: hidden;
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.request-card:active {
+    transform: scale(0.98);
+}
+
+.request-card.card-success {
+    border-left: 4px solid #28a745;
+}
+
+.request-card.card-warning {
+    border-left: 4px solid #ffc107;
+}
+
+.request-card.card-danger {
+    border-left: 4px solid #dc3545;
+}
+
+.request-card.card-secondary {
+    border-left: 4px solid #6c757d;
+}
+
+.card-header {
+    padding: 12px 15px;
+    background: #D5D4D4;
+    color: white;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.card-header .request-number {
+    color: black;
+    font-size: 1.1rem;
+    font-weight: 600;
+}
+
+.card-header .status-badge {
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 500;
+}
+
+.status-badge.success {
+    background: rgba(40, 167, 69, 0.9);
+}
+
+.status-badge.warning {
+    background: rgba(255, 193, 7, 0.9);
+    color: #333;
+}
+
+.status-badge.danger {
+    background: rgba(220, 53, 69, 0.9);
+}
+
+.status-badge.secondary {
+    background: rgba(108, 117, 125, 0.9);
+}
+
+.card-body {
+    padding: 15px;
+}
+
+.card-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 8px 0;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.card-row:last-child {
+    border-bottom: none;
+}
+
+.card-label {
+    color: #6c757d;
+    font-size: 0.85rem;
+    flex: 1;
+}
+
+.card-value {
+    font-weight: 500;
+    font-size: 0.9rem;
+    flex: 1.5;
+    text-align: right;
+}
+
+.card-details {
+    display: none;
+    padding: 0 15px 15px;
+    border-top: 1px solid #f0f0f0;
+    background: #f8f9fa;
+}
+
+.card-details.show {
+    display: block;
+}
+
+.card-footer {
+    padding: 12px 15px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px;
+    border-top: 1px solid #f0f0f0;
+}
+
+.btn-toggle-details {
+    flex: 1;
+    padding: 8px 15px;
+    border-radius: 20px;
+    font-size: 0.85rem;
+    background: #e9ecef;
+    border: none;
+    color: #495057;
+}
+
+.btn-edit {
+    flex: 1;
+    padding: 8px 15px;
+    border-radius: 20px;
+    font-size: 0.85rem;
+}
+
+.history-icon {
+    font-size: 1.3rem;
+    color: #007bff;
+    cursor: pointer;
+    padding: 5px;
+}
+
+@media (max-width: 767.98px) {
+    #table-container {
+        display: none !important;
+    }
+
+    .mobile-cards-container {
+        display: block !important;
+    }
+
+    #toolbar {
+        padding: 10px 15px;
+    }
+
+    .custom-title {
+        font-size: 1.1rem;
+    }
+
+    .custom-title a {
+        padding: 5px 10px;
+    }
+
+    .modal-dialog {
+        margin: 10px;
+    }
+
+    .mobile-header {
+        display: flex !important;
+        flex-direction: column;
+        gap: 15px;
+        padding: 15px;
+        background: #f8f9fa;
+        border-bottom: 1px solid #dee2e6;
+    }
+
+    .mobile-title {
+        font-size: 1.3rem;
+        font-weight: 600;
+        color: #333;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .mobile-search {
+        position: relative;
+    }
+
+    .mobile-search input {
+        width: 100%;
+        padding: 12px 15px 12px 40px;
+        border: 1px solid #ced4da;
+        border-radius: 25px;
+        font-size: 1rem;
+        background: white;
+    }
+
+    .mobile-search input:focus {
+        outline: none;
+        border-color: #007bff;
+        box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1);
+    }
+
+    .mobile-search i {
+        position: absolute;
+        left: 15px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #6c757d;
+    }
+
+    .home-btn {
+        padding: 8px 12px;
+        border-radius: 20px;
+    }
+
+    .mobile-pagination {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 15px;
+        padding: 15px;
+        background: #f8f9fa;
+        border-top: 1px solid #dee2e6;
+    }
+
+    .mobile-pagination button {
+        padding: 8px 20px;
+        border-radius: 20px;
+        font-size: 0.9rem;
+    }
+
+    .mobile-pagination .page-info {
+        font-size: 0.9rem;
+        color: #6c757d;
+    }
+}
+
+@media (min-width: 768px) {
+    .mobile-cards-container {
+        display: none !important;
+    }
+}

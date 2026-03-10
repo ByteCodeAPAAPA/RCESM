@@ -1,0 +1,53 @@
+// Функция для получения данных по url api
+//          Param: endpoint - url api
+//                 param - необязательный
+async function fetchData(endpoint, param) {
+    const url = new URL(/api/ + endpoint, window.location.origin);
+    url.searchParams.append('param', param);
+    const response = await fetch(url.toString());
+    return await response.json();
+}
+
+
+// Обработчик для всех кнопок с классом openModal
+document.querySelectorAll('.openModal').forEach(button => {
+    button.onclick = async function () {
+        const endpoint = button.getAttribute('data-endpoint');
+        const displayField = button.getAttribute('data-display-field');
+        const inputId = button.getAttribute('data-input-id');
+        const hiddenId = button.getAttribute('data-hidden-id'); // Получаем ID скрытого поля
+        const param = button.getAttribute('data-param');
+
+        const data = await fetchData(endpoint, param);
+        const list = document.getElementById(`${endpoint}List`);
+        list.innerHTML = '';
+
+        data.forEach(item => {
+            const li = document.createElement('li');
+            li.textContent = item[displayField];
+            li.onclick = function () {
+                document.getElementById(inputId).value = item[displayField]; // Заполняем видимое поле
+                document.getElementById(hiddenId).value = item.id; // Заполняем скрытое поле с ID
+                closeModal();
+            };
+            list.appendChild(li);
+        });
+
+        document.getElementById('myModal').style.display = 'block';
+    };
+});
+
+// Закрытие модального окна
+document.querySelector('.close').onclick = function () {
+    closeModal();
+};
+
+window.onclick = function (event) {
+    if (event.target.classList.contains('modal')) {
+        closeModal();
+    }
+};
+
+function closeModal() {
+    document.getElementById('myModal').style.display = 'none';
+}
