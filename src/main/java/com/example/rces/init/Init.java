@@ -55,7 +55,7 @@ public class Init {
             this.employeeService.setSecurityContext(employeeService.loadUserByUsername("system"));
             this.init();
         } catch (Exception e) {
-            throw new RuntimeException("Error PostConstruct in Init", e);
+            throw new RuntimeException("ERROR INIT PostConstruct IN Init.java", e);
         }
     }
 

@@ -1,4 +1,5 @@
 import org.springframework.boot.gradle.tasks.bundling.BootWar
+import java.net.URL
 
 plugins {
     java
@@ -96,6 +97,7 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-websocket")
 }
 
+//----------------------------Тесты----------------------------
 tasks.register("runAllTests") {
     dependsOn("apiTests", "uiTests")
 }
@@ -115,6 +117,78 @@ tasks.register<Test>("uiTests") {
     }
     mustRunAfter("apiTests")
 }
+//----------------------------Тесты----------------------------
+
+//----------------------------DOCKER----------------------------
+
+tasks.register("raiseUp") {
+    group = "application"
+    description = "Starts Docker, Spring Boot and runs tests"
+
+    doFirst {
+        println("🚀 Starting Docker...")
+        exec { commandLine = listOf("docker-compose", "up", "-d") }
+        waitFor("MySQL", 30) { checkMySQL() }
+    }
+
+    doLast {
+        println("🚀 Starting Spring Boot...")
+        Thread { exec { commandLine = listOf("cmd", "/c", "gradlew", "bootRun") } }.start()
+
+        waitFor("App", 60) { checkApp() }
+
+        println("🧪 Running tests...")
+        exec { commandLine = listOf("cmd", "/c", "gradlew", "runAllTests") }
+        println("✅ Tests completed")
+    }
+}
+
+tasks.register("raiseDown") {
+    doLast {
+        println("🛑 Stopping Spring Boot...")
+        "cmd /c for /f \"tokens=5\" %a in ('netstat -aon ^| findstr :2520 ^| findstr LISTENING') do taskkill /F /PID %a".runCommand()
+        println("✅ Done")
+    }
+}
+
+tasks.register("composeDown") {
+    group = "docker"
+    description = "Останавливает Docker Compose контейнеры"
+
+    doLast {
+        println("🛑 Stopping Docker Compose...")
+        exec {
+            commandLine = listOf("docker-compose", "down")
+        }
+        println("✅ Docker Compose stopped")
+    }
+}
+
+fun waitFor(name: String, max: Int, check: () -> Boolean) {
+    repeat(max) {
+        if (check()) { println("✅ $name ready"); return }
+        print("."); Thread.sleep(1000)
+    }
+    println("❌ $name timeout")
+}
+
+fun checkMySQL() = try {
+    "docker exec rces-mysql mysqladmin ping -u root -padminbms".runCommand().contains("alive")
+} catch (e: Exception) { false }
+
+fun checkApp() = try {
+    URL("http://localhost:2520/actuator/health").openConnection().let {
+        it.connectTimeout = 1000
+        it.connect()
+        it.contentLength >= 0
+    }
+} catch (e: Exception) { false }
+
+fun String.runCommand(): String = ProcessBuilder(*split(" ").toTypedArray())
+    .redirectOutput(ProcessBuilder.Redirect.PIPE).start()
+    .inputStream.bufferedReader().readText()
+
+//----------------------------DOCKER----------------------------
 
 tasks.withType<JavaCompile> {
     options.isFork = true

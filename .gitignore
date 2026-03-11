@@ -8,6 +8,10 @@ out/
 # Gradle
 .gradle/
 build/
+!build.gradle
+!build.gradle.kts
+!gradle.properties
+!gradle-wrapper.properties
 gradle-app.setting
 .gradletasknamecache
 
@@ -59,3 +63,10 @@ desktop.ini
 .env
 application-local.properties
 application-local.yml
+
+**/build/
+**/build/**
+build/
+/build/
+*/build/*
+**/build/resources/**
