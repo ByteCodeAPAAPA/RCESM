@@ -8,7 +8,7 @@ pipeline {
     stages {
         stage('Checkout') {
             steps {
-                git 'https://github.com/your-repo/your-app.git'
+                git 'https://github.com/ByteCodeAPAAPA/RCESM.git'
             }
         }
 
