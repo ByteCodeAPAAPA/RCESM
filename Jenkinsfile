@@ -1,36 +1,48 @@
 pipeline {
     agent any
     stages {
-        stage('Deploy') {
+        stage('Check files') {
             steps {
                 sh '''
-                    # Сборка приложения с Kotlin DSL
+                    echo "=== СОДЕРЖИМОЕ КОРНЕВОЙ ДИРЕКТОРИИ ==="
+                    ls -la
+
+                    echo "=== ПОИСК GRADLE ФАЙЛОВ ==="
+                    find . -name "build.gradle*" -o -name "settings.gradle*" -o -name "*.kts" | head -20
+
+                    echo "=== ТЕКУЩАЯ ДИРЕКТОРИЯ ==="
+                    pwd
+                '''
+            }
+        }
+        stage('Build') {
+            steps {
+                sh '''
+                    # Если проект в поддиректории
+                    if [ -d "backend" ]; then
+                        cd backend
+                    elif [ -d "app" ]; then
+                        cd app
+                    elif [ -d "src" ]; then
+                        cd src
+                    fi
+
+                    # Пытаемся собрать
                     docker run --rm \
                         -v "$(pwd):/app" \
                         -w /app \
                         gradle:7.6-jdk17 \
-                        gradle clean bootWar -x test
-
-                    # Проверка результатов сборки
-                    ls -la build/libs/ || echo "No build/libs directory"
-
-                    # Запуск контейнеров
-                    docker-compose down -v || true
-                    docker-compose up -d --build
-
-                    # Ожидание и проверка
-                    sleep 30
-                    curl -f http://192.168.0.67:2520/actuator/health || echo "Health check endpoint not ready"
+                        gradle tasks || true
                 '''
             }
         }
-    }
-    post {
-        always {
-            sh 'docker system prune -f || true'
-        }
-        failure {
-            sh 'docker-compose logs'
+        stage('Deploy') {
+            steps {
+                sh '''
+                    docker-compose down -v || true
+                    docker-compose up -d --build
+                '''
+            }
         }
     }
 }
