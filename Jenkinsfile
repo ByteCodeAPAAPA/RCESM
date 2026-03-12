@@ -4,18 +4,21 @@ pipeline {
         stage('Deploy') {
             steps {
                 sh '''
-                    docker-compose down -v || true
+                    # Сборка приложения
+                    gradle clean bootWar -x test || ./gradlew clean bootWar -x test
+
+                    # Запуск контейнеров
+                    docker-compose down -v
                     docker-compose up -d --build
-                    sleep 10
-                    curl -f http://192.168.0.67:2520/actuator/health
+
+                    # Проверка
+                    sleep 20
+                    curl -f http://192.168.0.67:2520/actuator/health || true
                 '''
             }
         }
     }
     post {
-        failure {
-            sh 'docker-compose logs'
-        }
         always {
             sh 'docker system prune -f || true'
         }
