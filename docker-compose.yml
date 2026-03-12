@@ -1,16 +1,50 @@
-version: '3.8'
-
 services:
   mysql:
     image: mysql:8.0
     container_name: rces-mysql
-    environment:
-      MYSQL_ROOT_PASSWORD: adminbms
-      MYSQL_DATABASE: rces
+    env_file:
+      - mysql.env
     ports:
       - "3307:3306"
     volumes:
-      - mysql:/var/lib/mysql
+      - mysql_data:/var/lib/mysql
+    command:
+      - --character-set-server=utf8mb4
+      - --collation-server=utf8mb4_unicode_ci
+      - --init-connect="SET NAMES utf8mb4"
+      - --skip-character-set-client-handshake
+    networks:
+      - rces_network
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+  spring-app:
+    image: gradle:7.6-jdk17
+    container_name: rces-app
+    ports:
+      - "192.168.0.67:2520:2520"
+    env_file:
+      - app.env
+    volumes:
+      - .:/app
+      - gradle-cache:/home/gradle/.gradle
+    working_dir: /app
+    command: sh -c "gradle clean bootWar -x test && java -jar build/libs/RCES.war"
+    networks:
+      - rces_network
+    depends_on:
+      mysql:
+        condition: service_healthy
+    restart: unless-stopped
 
 volumes:
-  mysql:
+  mysql_data:
+  gradle-cache:
+
+networks:
+  rces_network:
+    driver: bridge

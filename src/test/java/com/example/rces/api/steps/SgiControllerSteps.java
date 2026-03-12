@@ -15,11 +15,13 @@ import static io.restassured.RestAssured.given;
 
 public class SgiControllerSteps {
 
+    private static final String PATH = "/api/sgi/";
+
     @Step("Создать тестовое мероприятие")
     public static SgiDTO createSGI(SgiCreateDTO newSGI) {
         return given()
                 .spec(BaseApiTest.getAuthorizedRequestSpec())
-                .basePath("/api/sgi/create-sgi")
+                .basePath(PATH + "create-sgi")
                 .contentType("multipart/form-data")
                 .multiPart(new MultiPartSpecBuilder(newSGI)
                         .controlName("data")
@@ -36,7 +38,7 @@ public class SgiControllerSteps {
     public static SgiDTO addPlanDate(SgiDTO dto) {
         return given()
                 .spec(BaseApiTest.getAuthorizedRequestSpec())
-                .basePath("/api/sgi/update")
+                .basePath(PATH + "update")
                 .param("id", dto.getId())
                 .param("workcenter", dto.getWorkcenter())
                 .param("event", dto.getEvent())
@@ -57,7 +59,7 @@ public class SgiControllerSteps {
     public static SgiDTO addFactExecution(UUID id, LocalDate executionDate, String report) {
         return given()
                 .spec(BaseApiTest.getAuthorizedRequestSpec())
-                .basePath("/api/sgi/update")
+                .basePath(PATH + "update")
                 .param("id", id)
                 .param("factExecutionSGIBool", true)
                 .param("executionDate", executionDate.format(DateTimeFormatter.ISO_LOCAL_DATE))
@@ -72,7 +74,7 @@ public class SgiControllerSteps {
     public static Boolean agreeEvent(UUID id, boolean agree) {
         return given()
                 .spec(BaseApiTest.getAuthorizedRequestSpec())
-                .basePath("/api/sgi/agree")
+                .basePath(PATH + "agree")
                 .param("id", id)
                 .param("agreed", agree)
                 .patch()
@@ -85,7 +87,7 @@ public class SgiControllerSteps {
     public static void deleteSgiById(UUID id) {
         given()
                 .spec(BaseApiTest.getAuthorizedRequestSpec())
-                .basePath("/api/sgi/delete/{id}")
+                .basePath(PATH + "delete/{id}")
                 .pathParam("id", id)
                 .delete()
                 .then().log().all()

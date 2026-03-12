@@ -4,6 +4,7 @@ import com.example.rces.dto.InspectionCreateDTO;
 import com.example.rces.dto.InspectionDTO;
 import com.example.rces.dto.InspectionViolationCreateDTO;
 import com.example.rces.dto.InspectionViolationDTO;
+import com.example.rces.models.InspectionViolation;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
@@ -23,7 +24,7 @@ public interface InspectionService {
 
     InspectionViolationDTO createViolation(InspectionViolationCreateDTO dto, MultipartFile[] additionalFiles);
 
-    void changeStatus(UUID id);
+    String changeStatus(UUID id);
 
     void deleteInspection(Integer id);
 

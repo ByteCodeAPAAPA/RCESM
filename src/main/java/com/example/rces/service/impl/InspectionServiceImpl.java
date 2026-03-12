@@ -182,7 +182,7 @@ public class InspectionServiceImpl implements InspectionService {
     }
 
     @Override
-    public void changeStatus(UUID id) {
+    public String changeStatus(UUID id) {
         InspectionViolation violation = inspectionViolationRepository.findById(id).orElseThrow(
                 () -> new EntityNotFoundException("Нарушения с id" + id + "не существует"));
         if (violation.getInspection().getHaveSecondInspection()) {
@@ -190,7 +190,7 @@ public class InspectionServiceImpl implements InspectionService {
         }
         violation.setStatus(violation.getStatus().equals(InspectionViolation.StatusInspection.status1.getName()) ? InspectionViolation.StatusInspection.status2 : InspectionViolation.StatusInspection.status1);
         inspectionViolationRepository.save(violation);
-        inspectionViolationMapper.toDTO(violation);
+        return inspectionViolationMapper.toDTO(violation).getStatus();
     }
 
     @Override

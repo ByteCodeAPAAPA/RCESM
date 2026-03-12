@@ -68,9 +68,9 @@ public class InspectionRestController {
     }
 
     @PatchMapping("/change-status-violation/{id}")
-    public ResponseEntity<Void> changeStatus(@PathVariable UUID id) {
-        service.changeStatus(id);
-        return ResponseEntity.ok().build();
+    public ResponseEntity<String> changeStatus(@PathVariable UUID id) {
+        String status = service.changeStatus(id);
+        return ResponseEntity.ok(status);
     }
 
     @DeleteMapping("/delete-inspection/{id}")

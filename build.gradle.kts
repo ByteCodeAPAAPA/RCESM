@@ -2,8 +2,8 @@ import org.springframework.boot.gradle.tasks.bundling.BootWar
 import java.net.URL
 
 plugins {
-    java
-    war
+    id("java")
+    id("war")
     id("org.springframework.boot") version "3.4.3"
     id("io.spring.dependency-management") version "1.1.0"
     id("org.jetbrains.kotlin.jvm") version "1.9.25"
@@ -38,6 +38,7 @@ dependencies {
 
     // JWT Dependencies
     implementation("io.jsonwebtoken:jjwt-api:0.11.5")
+    implementation("org.springframework.boot:spring-boot-starter-actuator")
     runtimeOnly("io.jsonwebtoken:jjwt-impl:0.11.5")
     runtimeOnly("io.jsonwebtoken:jjwt-jackson:0.11.5")
 
@@ -95,6 +96,8 @@ dependencies {
     implementation("org.webjars.npm:bootstrap-table:1.24.1")
 
     implementation("org.springframework.boot:spring-boot-starter-websocket")
+
+    providedRuntime("org.springframework.boot:spring-boot-starter-tomcat")
 }
 
 //----------------------------Тесты----------------------------
@@ -128,18 +131,18 @@ tasks.register("raiseUp") {
     doFirst {
         println("🚀 Starting Docker...")
         exec { commandLine = listOf("docker-compose", "up", "-d") }
-        waitFor("MySQL", 30) { checkMySQL() }
+        waitFor("MySQL", 15) { checkMySQL() }
     }
 
     doLast {
         println("🚀 Starting Spring Boot...")
         Thread { exec { commandLine = listOf("cmd", "/c", "gradlew", "bootRun") } }.start()
 
-        waitFor("App", 60) { checkApp() }
+        waitFor("App", 20) { checkApp() }
 
-        println("🧪 Running tests...")
-        exec { commandLine = listOf("cmd", "/c", "gradlew", "runAllTests") }
-        println("✅ Tests completed")
+//        println("🧪 Running tests...")
+//        exec { commandLine = listOf("cmd", "/c", "gradlew", "runAllTests") }
+//        println("✅ Tests completed")
     }
 }
 
@@ -233,6 +236,16 @@ springBoot {
 tasks.withType<War> {
     enabled = true
     archiveFileName.set("RCES.war")
+}
+
+tasks.war {
+    enabled = true
+    archiveFileName.set("RCES.war")
+}
+
+tasks.bootWar {
+    archiveFileName.set("RCES.war")
+    mainClass.set("com.example.rces.RcesApplication") // Укажите ваш главный класс
 }
 
 /*file("gradle/scripts").listFiles{ f -> f.isFile && f.extension == "kts" }

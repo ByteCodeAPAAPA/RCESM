@@ -16,10 +16,10 @@ import java.util.UUID;
 import static com.example.rces.data.Sgi.createTestSgiDto;
 import static io.qameta.allure.SeverityLevel.CRITICAL;
 
-@Epic("Web интерфейс")           // Самый верхний уровень
-@Feature("Мероприятия")           // Средний уровень
-@Story("Создание мероприятия")
-@Tags({@Tag("Sgi"), @Tag("ui")})
+@Feature("Ui")
+@Story("Ui Мероприятия")
+@Tags({@Tag("SgiTest"), @Tag("ui")})
+@DisplayName("Мероприятия (UI)")
 public class SgiTest extends BaseTest {
 
     private static final String NOTIFICATION_CREATE = "Создано новое мероприятие";
