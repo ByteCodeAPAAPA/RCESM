@@ -4,23 +4,21 @@ pipeline {
         stage('Deploy') {
             steps {
                 sh '''
-                    # Сборка приложения
-                    gradle clean bootWar -x test || ./gradlew clean bootWar -x test
+                    # Даем права на выполнение gradlew
+                    chmod +x gradlew
 
-                    # Запуск контейнеров
-                    docker-compose down -v
+                    # Сборка через gradlew в Docker контейнере
+                    docker run --rm \
+                        -v $(pwd):/app \
+                        -w /app \
+                        gradle:7.6-jdk17 \
+                        ./gradlew clean bootWar -x bootRun
+
+                    docker-compose down -v || true
                     docker-compose up -d --build
-
-                    # Проверка
                     sleep 20
-                    curl -f http://192.168.0.67:2520/actuator/health || true
                 '''
             }
-        }
-    }
-    post {
-        always {
-            sh 'docker system prune -f || true'
         }
     }
 }
