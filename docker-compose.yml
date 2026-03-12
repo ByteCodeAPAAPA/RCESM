@@ -1,3 +1,5 @@
+version: '3.8'
+
 services:
   mysql:
     image: mysql:8.0
@@ -30,10 +32,10 @@ services:
     env_file:
       - app.env
     volumes:
-      - .:/app
+      - ./build/libs:/app
       - gradle-cache:/home/gradle/.gradle
     working_dir: /app
-    command: sh -c "gradle clean bootWar -x test && java -jar build/libs/RCES.war"
+    command: java -jar RCES.war
     networks:
       - rces_network
     depends_on:
