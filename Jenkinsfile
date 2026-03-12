@@ -4,7 +4,7 @@ pipeline {
         stage('Deploy') {
             steps {
                 sh '''
-                    # Сборка приложения в Docker контейнере используя gradle напрямую
+                    # Сборка приложения с Kotlin DSL
                     docker run --rm \
                         -v "$(pwd):/app" \
                         -w /app \
