@@ -10,11 +10,6 @@ services:
       - "3307:3306"
     volumes:
       - mysql_data:/var/lib/mysql
-    command:
-      - --character-set-server=utf8mb4
-      - --collation-server=utf8mb4_unicode_ci
-      - --init-connect="SET NAMES utf8mb4"
-      - --skip-character-set-client-handshake
     networks:
       - rces_network
     healthcheck:
@@ -32,10 +27,10 @@ services:
     env_file:
       - app.env
     volumes:
-      - ./build/libs:/app
+      - .:/app
       - gradle-cache:/home/gradle/.gradle
     working_dir: /app
-    command: java -jar RCES.war
+    command: sh -c "gradle clean bootWar -x test && java -jar build/libs/RCES.war"
     networks:
       - rces_network
     depends_on:
