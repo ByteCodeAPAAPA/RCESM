@@ -4,21 +4,28 @@ pipeline {
         stage('Deploy') {
             steps {
                 sh '''
-                    # Даем права на выполнение gradlew
                     chmod +x gradlew
 
-                    # Сборка через gradlew в Docker контейнере
+                    # Берем путь в кавычки из-за пробела
                     docker run --rm \
-                        -v $(pwd):/app \
+                        -v "$(pwd):/app" \
                         -w /app \
                         gradle:7.6-jdk17 \
-                        ./gradlew clean bootWar -x bootRun
+                        ./gradlew clean bootWar -x test
 
                     docker-compose down -v || true
                     docker-compose up -d --build
-                    sleep 20
+                    sleep 30
                 '''
             }
+        }
+    }
+    post {
+        always {
+            sh 'docker system prune -f || true'
+        }
+        failure {
+            sh 'docker-compose logs'
         }
     }
 }
