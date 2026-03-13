@@ -34,10 +34,10 @@ pipeline {
 
         stage('Wait for app') {
             steps {
-                timeout(time: 50, unit: 'SECONDS') {
+                timeout(time: 120, unit: 'SECONDS') {
                     waitUntil(initialRecurrencePeriod: 5000) {
                         script {
-                            sh(script: "curl -s --fail http://192.168.0.67:2520", returnStatus: true) == 0
+                            sh(script: "curl -s --fail http://host.docker.internal:2520", returnStatus: true) == 0
                         }
                     }
                 }
