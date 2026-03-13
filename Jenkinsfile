@@ -34,15 +34,15 @@ pipeline {
 
         stage('Wait and test') {
             steps {
-                sh 'sleep 30'
+                sh 'sleep 150'
             }
         }
 
-        stage('Cleanup') {
-            steps {
-                sh 'docker-compose down'
-            }
-        }
+//         stage('Cleanup') {
+//             steps {
+//                 sh 'docker-compose down'
+//             }
+//         }
     }
 
     post {
