@@ -12,7 +12,6 @@ pipeline {
             steps {
                 script {
                     sh '''
-                       cd var/jenkins_home/workspace/'pipeline запуск'
                        docker-compose up -d
                     '''
                 }
