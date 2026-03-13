@@ -32,17 +32,27 @@ pipeline {
             }
         }
 
-        stage('Wait and test') {
+        stage('Wait for app') {
             steps {
-                sh 'sleep 150'
+                waitUntil(timeout: 50, initialRecurrencePeriod: 15000) {
+                    script {
+                        sh(script: "curl -s --fail http://192.168.0.67:2520", returnStatus: true) == 0
+                    }
+                }
             }
         }
 
-//         stage('Cleanup') {
-//             steps {
-//                 sh 'docker-compose down'
-//             }
-//         }
+        stage('Test') {
+            steps {
+                sh './gradlew runAllTests'
+            }
+        }
+
+        stage('Cleanup') {
+            steps {
+                sh 'docker-compose down'
+            }
+        }
     }
 
     post {
