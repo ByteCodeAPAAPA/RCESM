@@ -34,9 +34,11 @@ pipeline {
 
         stage('Wait for app') {
             steps {
-                waitUntil(timeout: 50, initialRecurrencePeriod: 15000) {
-                    script {
-                        sh(script: "curl -s --fail http://192.168.0.67:2520", returnStatus: true) == 0
+                timeout(time: 50, unit: 'SECONDS') {
+                    waitUntil(initialRecurrencePeriod: 5000) {
+                        script {
+                            sh(script: "curl -s --fail http://192.168.0.67:2520", returnStatus: true) == 0
+                        }
                     }
                 }
             }
