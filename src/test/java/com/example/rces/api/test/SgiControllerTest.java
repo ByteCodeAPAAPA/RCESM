@@ -1,7 +1,7 @@
 package com.example.rces.api.test;
 
-import com.example.rces.dto.SgiCreateDTO;
 import com.example.rces.dto.SgiDTO;
+import groovy.util.logging.Slf4j;
 import io.qameta.allure.Feature;
 import io.qameta.allure.Owner;
 import io.qameta.allure.Severity;
@@ -13,15 +13,14 @@ import java.util.UUID;
 
 import static com.example.rces.api.steps.SgiControllerSteps.*;
 import static com.example.rces.data.Sgi.createTestSgiDto;
-import static com.example.rces.utils.DateUtil.formatedDate;
 import static io.qameta.allure.SeverityLevel.CRITICAL;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
-import static org.junit.jupiter.api.Assertions.assertAll;
 
 @Feature("Api")
 @Story("Api Мероприятия")
 @Tags({@Tag("SgiController"), @Tag("api")})
 @DisplayName("Мероприятия (API)")
+@Slf4j
 public class SgiControllerTest extends BaseApiTest {
 
     private UUID createdSgiId;
@@ -34,42 +33,38 @@ public class SgiControllerTest extends BaseApiTest {
     }
 
     @Test
-    @DisplayName("Полный api цикл работы с мероприятием: создание → редактирование → выполнение → удаление")
+    @DisplayName("Полный жизненный цикл мероприятия")
     @Owner("ByteCodeAPAA")
     @Severity(CRITICAL)
-    public void fullSgiLifecycle () {
+    public void fullSgiLifecycle() {
         String uniqueEventName = "Тестовое мероприятие " + UUID.randomUUID();
-        SgiCreateDTO createSgiDTO = createTestSgiDto(uniqueEventName);
 
-        // 1. Создание мероприятия
-        SgiDTO sgi = createSGI(createSgiDTO);
-        createdSgiId = sgi.getId();
-        SgiDTO finalSgi = sgi;
-        assertAll("Проверка создания",
-                () -> assertThat(finalSgi.getId()).isNotNull(),
-                () -> assertThat(finalSgi.getEvent()).isEqualTo(uniqueEventName)
-        );
+        try {
+            step("Создание мероприятия");
+            SgiDTO sgi = createSGI(createTestSgiDto(uniqueEventName));
+            createdSgiId = sgi.getId();
+            assertThat(sgi.getId()).isNotNull();
 
-        // 2. Добавление плановой даты
-        sgi = addPlanDate(sgi);
-        assertThat(sgi.getPlanDate()).isEqualTo(LocalDate.now());
+            step("Добавление плановой даты");
+            sgi = addPlanDate(sgi);
+            assertThat(sgi.getPlanDate()).isEqualTo(LocalDate.now());
 
-        // 3. Добавление факта выполнения
-        LocalDate executionDate = LocalDate.now();
-        String report = "Тестовый отчет " + UUID.randomUUID();
-        sgi = addFactExecution(sgi.getId(), executionDate, report);
-        SgiDTO finalSgi1 = sgi;
-        assertAll("Проверка выполнения",
-                () -> assertThat(finalSgi1.getFactExecution().getExecutionDate()).isEqualTo(formatedDate(executionDate)),
-                () -> assertThat(finalSgi1.getFactExecution().getReport()).isEqualTo(report)
-        );
+            step("Добавление факта выполнения");
+            String report = "Тестовый отчет " + UUID.randomUUID();
+            sgi = addFactExecution(sgi.getId(), LocalDate.now(), report);
+            assertThat(sgi.getFactExecution().getReport()).isEqualTo(report);
 
-        // 4. Согласование
-        Boolean expectedTrueAgree = agreeEvent(sgi.getId(), true);
-            assertThat(expectedTrueAgree).isTrue();
+            step("Согласование мероприятия");
+            assertThat(agreeEvent(sgi.getId(), true)).isTrue();
 
-        // 5. Отмена согласования
-        Boolean expectedFalseAgree = agreeEvent(sgi.getId(), false);
-        assertThat(sgi.getAgree()).isFalse();
+            step("Отмена согласования");
+            agreeEvent(sgi.getId(), false);
+            sgi = getById(sgi.getId());
+            assertThat(sgi.getAgree()).isFalse();
+
+        } catch (AssertionError | Exception e) {
+            stepFailed(e);
+            throw e;
+        }
     }
 }

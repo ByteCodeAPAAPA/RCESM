@@ -88,6 +88,12 @@ public class SGIRestController {
         return ResponseEntity.ok().body(new RequestDataDTO(pageSgiPayload.getContent(), pageSgiPayload.getTotalElements()));
     }
 
+    @GetMapping("/get-by-id/{id}")
+    public ResponseEntity<SgiDTO> getById(@PathVariable UUID id) {
+        SgiDTO sgiDTO = sgiService.getById(id);
+        return ResponseEntity.ok(sgiDTO);
+    }
+
     @GetMapping("/get-images-sgi")
     public ResponseEntity<List<ImagesDTO>> getImagesForSgiId(@RequestParam UUID id) {
         List<ImagesDTO> imagesPayload = imageService.getImagesForSgiId(id);

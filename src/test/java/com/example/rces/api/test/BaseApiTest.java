@@ -1,5 +1,6 @@
 package com.example.rces.api.test;
 
+import com.example.rces.AbstractTest;
 import com.example.rces.data.Employee;
 import io.restassured.specification.RequestSpecification;
 
@@ -10,7 +11,8 @@ import java.nio.file.Paths;
 import static com.example.rces.api.Specs.request;
 import static io.restassured.RestAssured.given;
 
-public class BaseApiTest {
+public class BaseApiTest extends AbstractTest {
+
     private static final Path TOKEN_FILE = Paths.get("build/tmp/test-token.txt");
     private static String token;
 

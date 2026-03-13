@@ -4,8 +4,10 @@ import com.example.rces.dto.DocumentCreateDTO;
 import com.example.rces.dto.DocumentDTO;
 import com.example.rces.dto.SgiCreateDTO;
 import com.example.rces.dto.SgiDTO;
+import com.example.rces.exception.EntityNotFoundExceptionBormash;
 import com.example.rces.mapper.SgiMapper;
 import com.example.rces.models.*;
+import com.example.rces.models.enums.NotificationType;
 import com.example.rces.repository.SgiRepository;
 import com.example.rces.service.*;
 import com.example.rces.utils.FilesUtil;
@@ -99,6 +101,12 @@ public class SgiServiceImpl implements SgiService {
     @Override
     public Optional<SGI> findById(UUID id) {
         return repository.findById(id);
+    }
+
+    @Override
+    public SgiDTO getById(UUID id) {
+        SGI sgi = repository.findById(id).orElseThrow(() -> new EntityNotFoundExceptionBormash("Нет такого мероприятия", NotificationType.ERROR));
+        return mapper.toDTO(sgi);
     }
 
     @Override
