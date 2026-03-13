@@ -46,7 +46,7 @@ pipeline {
 
         stage('Test') {
             steps {
-                sh 'gradlew runAllTests'
+                sh './gradlew runAllTests'
             }
         }
 
