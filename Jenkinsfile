@@ -1,26 +1,37 @@
 pipeline {
     agent any
     stages {
-        stage('Deploy') {
+        stage('Clean') {
             steps {
                 sh '''
-                    # Очистка и запуск
-                    docker-compose down -v || true
-                    docker-compose up -d --build
+                    echo "=== Полная очистка ==="
+                    # Удалить всё: контейнеры, сети, volumes
+                    docker-compose down -v --remove-orphans || true
 
-                    # Проверка
-                    sleep 30
-                    curl -f http://192.168.0.67:2520/actuator/health || echo "Health check endpoint not ready"
+                    # Удалить конкретные контейнеры если остались
+                    docker rm -f $(docker ps -aq) 2>/dev/null || true
+
+                    # Очистить все неиспользуемые ресурсы
+                    docker system prune -af --volumes
                 '''
             }
         }
-    }
-    post {
-        always {
-            sh 'docker system prune -f || true'
-        }
-        failure {
-            sh 'docker-compose logs'
+        stage('Deploy') {
+            steps {
+                sh '''
+                    echo "=== Свежий запуск ==="
+                    docker-compose up -d --build --force-recreate
+
+                    echo "=== Ожидание запуска ==="
+                    sleep 20
+
+                    echo "=== Статус контейнеров ==="
+                    docker ps
+
+                    echo "=== Проверка приложения ==="
+                    curl -f http://192.168.0.67:2520/actuator/health || echo "Health check не доступен"
+                '''
+            }
         }
     }
 }
