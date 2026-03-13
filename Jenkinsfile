@@ -16,30 +16,46 @@ pipeline {
                         MYSQL_EXISTS=$(docker ps -a --filter "name=rces-mysql" --format "{{.Names}}")
                         APP_EXISTS=$(docker ps -a --filter "name=rces-app" --format "{{.Names}}")
 
-                        if [ -n "$MYSQL_EXISTS" ] && [ -n "$APP_EXISTS" ]; then
-                            echo "Контейнеры уже существуют, проверяем их состояние..."
+                        echo "MySQL контейнер существует: $MYSQL_EXISTS"
+                        echo "App контейнер существует: $APP_EXISTS"
 
-                            # Проверяем, запущены ли контейнеры
-                            MYSQL_RUNNING=$(docker ps --filter "name=rces-mysql" --filter "status=running" --format "{{.Names}}")
-                            APP_RUNNING=$(docker ps --filter "name=rces-app" --filter "status=running" --format "{{.Names}}")
+                        if [ -n "$MYSQL_EXISTS" ] || [ -n "$APP_EXISTS" ]; then
+                            echo "Некоторые контейнеры уже существуют, запускаем их..."
 
-                            # Запускаем MySQL если он остановлен
-                            if [ -z "$MYSQL_RUNNING" ]; then
-                                echo "Запускаем существующий MySQL контейнер..."
-                                docker start rces-mysql
-                            else
-                                echo "MySQL уже запущен"
+                            # Запускаем MySQL если он существует и остановлен
+                            if [ -n "$MYSQL_EXISTS" ]; then
+                                MYSQL_RUNNING=$(docker ps --filter "name=rces-mysql" --filter "status=running" --format "{{.Names}}")
+                                if [ -z "$MYSQL_RUNNING" ]; then
+                                    echo "Запускаем существующий MySQL контейнер..."
+                                    docker start rces-mysql
+                                else
+                                    echo "MySQL уже запущен"
+                                fi
                             fi
 
-                            # Запускаем приложение если оно остановлено
-                            if [ -z "$APP_RUNNING" ]; then
-                                echo "Запускаем существующий контейнер приложения..."
-                                docker start rces-app
-                            else
-                                echo "Приложение уже запущено"
+                            # Запускаем приложение если оно существует и остановлен
+                            if [ -n "$APP_EXISTS" ]; then
+                                APP_RUNNING=$(docker ps --filter "name=rces-app" --filter "status=running" --format "{{.Names}}")
+                                if [ -z "$APP_RUNNING" ]; then
+                                    echo "Запускаем существующий контейнер приложения..."
+                                    docker start rces-app
+                                else
+                                    echo "Приложение уже запущено"
+                                fi
+                            fi
+
+                            # Если приложение не существует, создаем только его через docker-compose
+                            if [ -z "$APP_EXISTS" ] && [ -n "$MYSQL_EXISTS" ]; then
+                                echo "Приложение не найдено, создаем только контейнер приложения..."
+                                # Создаем временный docker-compose файл без MySQL сервиса
+                                sed '/mysql:/,/depends_on:/ {
+                                    /depends_on:/!d
+                                }' docker-compose.yml > docker-compose-app-only.yml
+                                docker-compose -f docker-compose-app-only.yml up -d spring-app
+                                rm docker-compose-app-only.yml
                             fi
                         else
-                            echo "Контейнеры не найдены, создаем новые через docker-compose..."
+                            echo "Контейнеры не найдены, создаем все через docker-compose..."
                             docker-compose up -d
                         fi
                     '''
@@ -51,21 +67,33 @@ pipeline {
             steps {
                 script {
                     sh '''
-                        # Проверяем что оба контейнера запущены
-                        MYSQL_RUNNING=$(docker ps --filter "name=rces-mysql" --filter "status=running" --format "{{.Names}}")
-                        APP_RUNNING=$(docker ps --filter "name=rces-app" --filter "status=running" --format "{{.Names}}")
+                        # Проверяем что оба контейнера существуют и запущены
+                        MYSQL_EXISTS=$(docker ps -a --filter "name=rces-mysql" --format "{{.Names}}")
+                        APP_EXISTS=$(docker ps -a --filter "name=rces-app" --format "{{.Names}}")
 
-                        if [ -z "$MYSQL_RUNNING" ]; then
-                            echo "ОШИБКА: MySQL контейнер не запущен"
-                            exit 1
+                        if [ -z "$MYSQL_EXISTS" ]; then
+                            echo "ОШИБКА: MySQL контейнер не существует. Создаем..."
+                            docker-compose up -d mysql
+                        else
+                            MYSQL_RUNNING=$(docker ps --filter "name=rces-mysql" --filter "status=running" --format "{{.Names}}")
+                            if [ -z "$MYSQL_RUNNING" ]; then
+                                echo "Запускаем существующий MySQL контейнер..."
+                                docker start rces-mysql
+                            fi
                         fi
 
-                        if [ -z "$APP_RUNNING" ]; then
-                            echo "ОШИБКА: Контейнер приложения не запущен"
-                            exit 1
+                        if [ -z "$APP_EXISTS" ]; then
+                            echo "ОШИБКА: Контейнер приложения не существует. Создаем..."
+                            docker-compose up -d spring-app
+                        else
+                            APP_RUNNING=$(docker ps --filter "name=rces-app" --filter "status=running" --format "{{.Names}}")
+                            if [ -z "$APP_RUNNING" ]; then
+                                echo "Запускаем существующий контейнер приложения..."
+                                docker start rces-app
+                            fi
                         fi
 
-                        echo "Все контейнеры успешно запущены:"
+                        echo "Финальный статус контейнеров:"
                         docker ps --filter "name=rces-mysql" --filter "name=rces-app"
                     '''
                 }
@@ -86,6 +114,7 @@ pipeline {
                             sleep 5
                         done
                         echo "MySQL не запустился вовремя"
+                        docker logs rces-mysql --tail 50
                         exit 1
                     '''
                 }
@@ -122,10 +151,10 @@ pipeline {
                         docker ps --filter "name=rces-mysql" --filter "name=rces-app"
                         echo ""
                         echo "=== ЛОГИ MYSQL (последние 10 строк) ==="
-                        docker logs rces-mysql --tail 10
+                        docker logs rces-mysql --tail 10 || echo "MySQL логов нет"
                         echo ""
                         echo "=== ЛОГИ ПРИЛОЖЕНИЯ (последние 10 строк) ==="
-                        docker logs rces-app --tail 10
+                        docker logs rces-app --tail 10 || echo "Логов приложения нет"
                     '''
                 }
             }
@@ -135,22 +164,17 @@ pipeline {
     post {
         failure {
             script {
-                // При ошибке показываем логи для диагностики
                 sh '''
                     echo "=== ПОДРОБНЫЕ ЛОГИ ПРИ ОШИБКЕ ==="
                     echo "-- MySQL логи --"
-                    docker logs rces-mysql --tail 50 || true
+                    docker logs rces-mysql --tail 50 || echo "MySQL не запущен"
                     echo ""
                     echo "-- Логи приложения --"
-                    docker logs rces-app --tail 50 || true
+                    docker logs rces-app --tail 50 || echo "Приложение не запущено"
+                    echo ""
+                    echo "=== СТАТУС ВСЕХ КОНТЕЙНЕРОВ ==="
+                    docker ps -a
                 '''
-            }
-        }
-
-
-        always {
-            script {
-                sh 'docker stop rces-mysql rces-app || true'
             }
         }
     }
