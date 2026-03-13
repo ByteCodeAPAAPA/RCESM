@@ -35,7 +35,7 @@ pipeline {
         stage('Wait for app') {
             steps {
                 timeout(time: 120, unit: 'SECONDS') {
-                    waitUntil(initialRecurrencePeriod: 5000) {
+                    waitUntil(initialRecurrencePeriod: 10000) {
                         script {
                             sh(script: "curl -s --fail http://host.docker.internal:2520/login", returnStatus: true) == 0
                         }
@@ -46,7 +46,7 @@ pipeline {
 
         stage('Test') {
             steps {
-                sh 'gradle runAllTests'
+                sh 'gradlew runAllTests'
             }
         }
 
