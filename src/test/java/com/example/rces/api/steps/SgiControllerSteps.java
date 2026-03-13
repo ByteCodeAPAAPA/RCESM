@@ -17,6 +17,18 @@ public class SgiControllerSteps {
 
     private static final String PATH = "/api/sgi/";
 
+    @Step("Найти мероприятия по id")
+    public static SgiDTO getById(UUID id) {
+        return given()
+                .spec(BaseApiTest.getAuthorizedRequestSpec())
+                .basePath(PATH + "get-by-id/{id}")
+                .pathParam("id", id)
+                .get()
+                .then().log().all()
+                .statusCode(200)
+                .extract().as(SgiDTO.class);
+    }
+
     @Step("Создать тестовое мероприятие")
     public static SgiDTO createSGI(SgiCreateDTO newSGI) {
         return given()
