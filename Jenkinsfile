@@ -4,10 +4,6 @@ pipeline {
         stage('Clean') {
             steps {
                 sh '''
-                    echo "=== Полная очистка ==="
-                    # Удалить всё: контейнеры, сети, volumes
-                    docker-compose down -v --remove-orphans || true
-
                     # Удалить конкретные контейнеры если остались
                     docker rm -f $(docker ps -aq) 2>/dev/null || true
 
