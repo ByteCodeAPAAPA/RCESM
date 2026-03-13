@@ -37,7 +37,7 @@ pipeline {
                 timeout(time: 120, unit: 'SECONDS') {
                     waitUntil(initialRecurrencePeriod: 5000) {
                         script {
-                            sh(script: "curl -s --fail http://host.docker.internal:2520", returnStatus: true) == 0
+                            sh(script: "curl -s --fail http://host.docker.internal:2520/login", returnStatus: true) == 0
                         }
                     }
                 }
