@@ -12,7 +12,7 @@ pipeline {
             steps {
                 script {
                     sh '''
-                       docker-compose start -d
+                       docker-compose up -d
                     '''
                 }
             }
