@@ -1,32 +1,61 @@
 pipeline {
     agent any
-    stages {
-        stage('Clean') {
-            steps {
-                sh '''
-                    # Удалить конкретные контейнеры если остались
-                    docker rm -f $(docker ps -aq) 2>/dev/null || true
 
-                    # Очистить все неиспользуемые ресурсы
-                    docker system prune -af --volumes
-                '''
+    stages {
+        stage('Checkout') {
+            steps {
+                // Забирает код из репозитория (работает, если Jenkinsfile в SCM)
+                checkout scm
             }
         }
-        stage('Deploy') {
+
+        stage('Start Docker Compose') {
             steps {
-                sh '''
-                    echo "=== Свежий запуск ==="
-                    docker-compose up -d --build --force-recreate
+                script {
+                    // Поднимаем контейнеры в фоне
+                    sh 'docker-compose up -d'
+                }
+            }
+        }
 
-                    echo "=== Ожидание запуска ==="
-                    sleep 20
+        stage('Verify containers') {
+            steps {
+                script {
+                    // Проверяем, что оба контейнера присутствуют в списке запущенных
+                    sh 'docker ps | grep rces-mysql'
+                    sh 'docker ps | grep rces-app'
+                }
+            }
+        }
 
-                    echo "=== Статус контейнеров ==="
-                    docker ps
+        stage('Wait for Spring App') {
+            steps {
+                script {
+                    // Ждём, пока приложение начнёт отвечать по HTTP (health check)
+                    sh '''
+                        for i in $(seq 1 30); do
+                            HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:2520/actuator/health || true)
+                            if [ "$HTTP_CODE" = "200" ]; then
+                                echo "Application is ready!"
+                                exit 0
+                            fi
+                            echo "Waiting for application... ($i/30)"
+                            sleep 5
+                        done
+                        echo "Application failed to start"
+                        exit 1
+                    '''
+                }
+            }
+        }
+    }
 
-                    echo "=== Проверка приложения ==="
-                    curl -f http://192.168.0.67:2520/actuator/health || echo "Health check не доступен"
-                '''
+    post {
+        always {
+            script {
+                // Останавливаем контейнеры и удаляем сеть (volume'ы сохраняются)
+                sh 'docker-compose down'
+                // Если нужно удалить и volume'ы, добавьте флаг -v: docker-compose down -v
             }
         }
     }
