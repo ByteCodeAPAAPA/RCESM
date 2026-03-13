@@ -12,6 +12,7 @@ pipeline {
             steps {
                 script {
                     sh '''
+                       docker run -it --rm -v /var/lib/docker/volumes/jenkins_home/_data/workspace/pipeline:/app -w /app gradle:7.6-jdk17 bash
                        docker-compose up -d
                     '''
                 }
