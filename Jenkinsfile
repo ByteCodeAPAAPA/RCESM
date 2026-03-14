@@ -55,17 +55,11 @@ pipeline {
         stage('Test') {
             steps {
                 script {
-                    // Проверяем что находится в HOST_WORKSPACE
-                    sh 'ls -la ${HOST_WORKSPACE}'
-
-                    // Монтируем правильную директорию
-                    sh 'docker-compose down'
-                    sh "export HOST_WORKSPACE='${env.HOST_WORKSPACE}' && docker-compose up -d"
-
-                    // Проверяем что файлы появились
-                    sh 'docker exec rces-app ls -la /app'
+                    // Копируем файлы из Jenkins workspace в контейнер rces-app
+                    sh 'docker cp /var/jenkins_home/workspace/allTest/. rces-app:/app/'
 
                     // Запускаем тесты
+                    sh 'docker exec rces-app chmod +x /app/gradlew'
                     sh 'docker exec -w /app rces-app ./gradlew runAllTests'
                 }
             }
