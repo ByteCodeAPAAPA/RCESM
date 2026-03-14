@@ -55,24 +55,13 @@ pipeline {
         stage('Test') {
             steps {
                 script {
-                    // ДИАГНОСТИКА: проверяем содержимое рабочей директории
-                    echo "=== СОДЕРЖИМОЕ WORKSPACE ==="
-                    sh 'ls -la /var/jenkins_home/workspace/allTest'
+                    // Копируем во временную директорию
+                    sh 'docker exec rces-app mkdir -p /tmp/test'
+                    sh "docker cp ${WORKSPACE}/. rces-app:/tmp/test/"
 
-                    echo "=== ТЕКУЩАЯ ДИРЕКТОРИЯ ==="
-                    sh 'pwd && ls -la'
-
-                    // Копируем файлы
-                    echo "=== КОПИРОВАНИЕ ФАЙЛОВ ==="
-                    sh 'docker cp /var/jenkins_home/workspace/allTest/. rces-app:/app/'
-
-                    // Проверяем что скопировалось
-                    echo "=== ФАЙЛЫ В КОНТЕЙНЕРЕ ПОСЛЕ КОПИРОВАНИЯ ==="
-                    sh 'docker exec rces-app ls -la /app'
-
-                    // Запускаем тесты
-                    sh 'docker exec rces-app chmod +x /app/gradlew'
-                    sh 'docker exec -w /app rces-app ./gradlew runAllTests'
+                    // Запускаем тесты из временной директории
+                    sh 'docker exec rces-app chmod +x /tmp/test/gradlew'
+                    sh 'docker exec -w /tmp/test rces-app ./gradlew runAllTests'
                 }
             }
         }
