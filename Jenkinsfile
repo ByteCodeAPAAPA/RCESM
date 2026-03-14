@@ -55,8 +55,20 @@ pipeline {
         stage('Test') {
             steps {
                 script {
-                    // Копируем файлы из Jenkins workspace в контейнер rces-app
+                    // ДИАГНОСТИКА: проверяем содержимое рабочей директории
+                    echo "=== СОДЕРЖИМОЕ WORKSPACE ==="
+                    sh 'ls -la /var/jenkins_home/workspace/allTest'
+
+                    echo "=== ТЕКУЩАЯ ДИРЕКТОРИЯ ==="
+                    sh 'pwd && ls -la'
+
+                    // Копируем файлы
+                    echo "=== КОПИРОВАНИЕ ФАЙЛОВ ==="
                     sh 'docker cp /var/jenkins_home/workspace/allTest/. rces-app:/app/'
+
+                    // Проверяем что скопировалось
+                    echo "=== ФАЙЛЫ В КОНТЕЙНЕРЕ ПОСЛЕ КОПИРОВАНИЯ ==="
+                    sh 'docker exec rces-app ls -la /app'
 
                     // Запускаем тесты
                     sh 'docker exec rces-app chmod +x /app/gradlew'
