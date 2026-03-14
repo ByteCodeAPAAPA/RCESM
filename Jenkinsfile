@@ -1,20 +1,25 @@
 pipeline {
     agent any
 
-    environment {
-        HOST_WORKSPACE = sh(
-            script: """
-                volume_path=\$(docker volume inspect jenkins_home --format '{{ .Mountpoint }}')
-                echo "\${volume_path}/workspace/${env.JOB_BASE_NAME}"
-            """,
-            returnStdout: true
-        ).trim()
-    }
-
     stages {
         stage('Checkout') {
             steps {
                 checkout scm
+            }
+        }
+
+        stage('Prepare environment') {
+            steps {
+                script {
+                    def volumePath = sh(
+                        script: "docker volume inspect jenkins_home --format '{{ .Mountpoint }}'",
+                        returnStdout: true
+                    ).trim()
+
+                    env.HOST_WORKSPACE = "${volumePath}/workspace/${env.JOB_BASE_NAME}"
+
+                    echo "HOST_WORKSPACE = ${env.HOST_WORKSPACE}"
+                }
             }
         }
 
@@ -27,7 +32,7 @@ pipeline {
         stage('Run docker-compose') {
             steps {
                 script {
-                    sh "HOST_WORKSPACE='${HOST_WORKSPACE}' docker-compose up -d"
+                    sh "export HOST_WORKSPACE='${env.HOST_WORKSPACE}' && docker-compose up -d"
                 }
             }
         }
@@ -37,7 +42,8 @@ pipeline {
                 timeout(time: 120, unit: 'SECONDS') {
                     waitUntil(initialRecurrencePeriod: 10000) {
                         script {
-                            sh(script: "curl -s --fail http://host.docker.internal:2520/login", returnStatus: true) == 0
+                            // На Windows используем localhost или специальный IP
+                            sh(script: "curl -s --fail http://localhost:2520/login", returnStatus: true) == 0
                         }
                     }
                 }
