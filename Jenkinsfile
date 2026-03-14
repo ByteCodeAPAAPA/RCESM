@@ -40,10 +40,12 @@ pipeline {
         stage('Wait for app') {
             steps {
                 timeout(time: 120, unit: 'SECONDS') {
-                    waitUntil(initialRecurrencePeriod: 10000) {
+                    waitUntil(initialRecurrencePeriod: 5000) {
                         script {
-                            // На Windows используем localhost или специальный IP
-                            sh(script: "curl -s --fail http://localhost:2520/login", returnStatus: true) == 0
+                            sh(script: """
+                                curl -s --fail http://host.docker.internal:2520/login \
+                                | grep -q 'login'
+                            """, returnStatus: true) == 0
                         }
                     }
                 }
