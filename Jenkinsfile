@@ -54,7 +54,20 @@ pipeline {
 
         stage('Test') {
             steps {
-                sh 'docker exec -w /app rces-app ./gradlew runAllTests'
+                script {
+                    // Проверяем что находится в HOST_WORKSPACE
+                    sh 'ls -la ${HOST_WORKSPACE}'
+
+                    // Монтируем правильную директорию
+                    sh 'docker-compose down'
+                    sh "export HOST_WORKSPACE='${env.HOST_WORKSPACE}' && docker-compose up -d"
+
+                    // Проверяем что файлы появились
+                    sh 'docker exec rces-app ls -la /app'
+
+                    // Запускаем тесты
+                    sh 'docker exec -w /app rces-app ./gradlew runAllTests'
+                }
             }
         }
 
