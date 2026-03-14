@@ -54,7 +54,7 @@ pipeline {
 
         stage('Test') {
             steps {
-                sh 'docker exec rces-app ./gradlew runAllTests'
+                sh 'docker exec -w /app rces-app ./gradlew runAllTests'
             }
         }
 
