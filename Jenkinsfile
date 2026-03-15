@@ -1,6 +1,10 @@
 pipeline {
     agent any
 
+    environment {
+        GRADLE_USER_HOME = '/tmp/.gradle-cache'
+    }
+
     stages {
         stage('Checkout') {
             steps {
@@ -17,7 +21,6 @@ pipeline {
                     ).trim()
 
                     env.HOST_WORKSPACE = "${volumePath}/workspace/${env.JOB_BASE_NAME}"
-
                     echo "HOST_WORKSPACE = ${env.HOST_WORKSPACE}"
                 }
             }
@@ -55,13 +58,17 @@ pipeline {
         stage('Test') {
             steps {
                 script {
-                    // Копируем во временную директорию
-                    sh 'docker exec rces-app mkdir -p /tmp/test'
-                    sh "docker cp ${WORKSPACE}/. rces-app:/tmp/test/"
-
-                    // Запускаем тесты из временной директории
-                    sh 'docker exec rces-app chmod +x /tmp/test/gradlew'
-                    sh 'docker exec -w /tmp/test rces-app ./gradlew runAllTests'
+                    sh 'docker exec rces-app mkdir -p /tmp/test-${BUILD_NUMBER}'
+                    sh "docker cp ${WORKSPACE}/. rces-app:/tmp/test-${BUILD_NUMBER}/"
+                    sh "docker exec rces-app chmod +x /tmp/test-${BUILD_NUMBER}/gradlew"
+                    sh """
+                        docker exec \\
+                            -e BASE_URL=http://host.docker.internal:2520 \\
+                            -e HEADLESS=true \\
+                            -e SELENIUM_REMOTE_URL=http://selenium:4444/wd/hub \\
+                            -w /tmp/test-${BUILD_NUMBER} \\
+                            rces-app ./gradlew runAllTests
+                    """
                 }
             }
         }
@@ -69,6 +76,7 @@ pipeline {
         stage('Cleanup') {
             steps {
                 sh 'docker-compose down'
+                sh 'docker exec rces-app rm -rf /tmp/test-${BUILD_NUMBER} || true'
             }
         }
     }
@@ -76,6 +84,12 @@ pipeline {
     post {
         always {
             cleanWs()
+        }
+        success {
+            echo '✅ Все тесты успешно пройдены!'
+        }
+        failure {
+            echo '❌ Тесты завершились с ошибками. Проверьте логи.'
         }
     }
 }
