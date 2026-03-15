@@ -61,11 +61,12 @@ pipeline {
                     sh 'docker exec rces-app mkdir -p /tmp/test-${BUILD_NUMBER}'
                     sh "docker cp ${WORKSPACE}/. rces-app:/tmp/test-${BUILD_NUMBER}/"
                     sh "docker exec rces-app chmod +x /tmp/test-${BUILD_NUMBER}/gradlew"
+
                     sh """
                         docker exec \\
                             -e BASE_URL=http://host.docker.internal:2520 \\
                             -e HEADLESS=true \\
-                            -e SELENIUM_REMOTE_URL=http://selenium:4444/wd/hub \\
+                            -e SELENIUM_REMOTE_URL=http://host.docker.internal:4444/wd/hub \\
                             -w /tmp/test-${BUILD_NUMBER} \\
                             rces-app ./gradlew runAllTests
                     """
