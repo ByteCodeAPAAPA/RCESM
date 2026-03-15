@@ -88,15 +88,10 @@ public class InspectionControllerTest extends BaseApiTest {
                             .as("ID инспекции в критерии должно совпадать")
                             .isEqualTo(createdInspectionId));
 
-            step("Изменение статуса критерия с 'Не исправлено' на 'Исправлено'");
-            String status = changeViolationStatus(violation.getId());
-            assertEquals("Исправлено", status, "Статус должен измениться на 'Исправлено'");
-            log.debug("Статус критерия {} изменен на: {}", violation.getId(), status);
-
             step("Создание повторной инспекции");
             InspectionDTO secondaryInspection = createSecondaryInspection(inspection.getId());
             secondaryInspectionId = secondaryInspection.getId();
-            InspectionViolationDTO secondaryViolation = secondaryInspection.getViolation().get(0);
+            InspectionViolationDTO secondaryViolation = getViolations(secondaryInspectionId).get(0);
 
             step("Проверка повторной инспекции");
             assertAll("Проверка повторной инспекции",
@@ -106,6 +101,11 @@ public class InspectionControllerTest extends BaseApiTest {
                             secondaryViolation.getScore(),
                             "Балл в повторной инспекции должен быть увеличен на 1"
                     ));
+
+            step("Изменение статуса критерия с 'Не исправлено' на 'Исправлено'");
+            String status = changeViolationStatus(secondaryViolation.getId());
+            assertEquals("Исправлено", status, "Статус должен измениться на 'Исправлено'");
+            log.debug("Статус критерия {} изменен на: {}", violation.getId(), status);
 
             step("Проверка невозможности удаления инспекции/критерия с повторной инспекцией");
 

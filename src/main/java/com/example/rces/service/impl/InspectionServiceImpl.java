@@ -199,7 +199,7 @@ public class InspectionServiceImpl implements InspectionService {
         Inspection inspection = inspectionRepository.findById(id).orElseThrow(
                 () -> new EntityNotFoundExceptionBormash("Инспекции с id " + id + " не существует", NotificationType.ERROR));
         if (inspection.getHaveSecondInspection()) {
-            throw new ForbiddenException("Нельзя удалить основную инспекцию если есть вторичная");
+            throw new ForbiddenExceptionBormash("Нельзя удалить основную инспекцию если есть вторичная", NotificationType.ERROR);
         }
         Inspection primaryInspection = inspection.getPrimaryInspection();
         if (primaryInspection != null) {

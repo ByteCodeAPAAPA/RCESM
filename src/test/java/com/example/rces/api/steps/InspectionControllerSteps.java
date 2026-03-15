@@ -8,6 +8,7 @@ import com.example.rces.dto.InspectionViolationDTO;
 import io.qameta.allure.Step;
 import io.restassured.builder.MultiPartSpecBuilder;
 
+import java.util.List;
 import java.util.UUID;
 
 import static io.restassured.RestAssured.given;
@@ -21,6 +22,7 @@ public class InspectionControllerSteps {
         return given()
                 .spec(BaseApiTest.getAuthorizedRequestSpec())
                 .basePath(PATH + "create-inspection")
+                .body(createDTO)
                 .post()
                 .then().log().all()
                 .statusCode(200)
@@ -52,7 +54,7 @@ public class InspectionControllerSteps {
                 .patch()
                 .then().log().all()
                 .statusCode(200)
-                .extract().as(String.class);
+                .extract().asString();
     }
 
     @Step("Создать повторную проверку инспекции")
@@ -65,6 +67,18 @@ public class InspectionControllerSteps {
                 .then().log().all()
                 .statusCode(200)
                 .extract().as(InspectionDTO.class);
+    }
+
+    @Step("Получить список всех нарушений")
+    public static List<InspectionViolationDTO> getViolations(Integer inspectionId) {
+        return given()
+                .spec(BaseApiTest.getAuthorizedRequestSpec())
+                .basePath(PATH + "get-violation/{id}")
+                .pathParam("id", inspectionId)
+                .get()
+                .then().log().all()
+                .statusCode(200)
+                .extract().jsonPath().getList(".", InspectionViolationDTO.class);
     }
 
     @Step("Удалить критерий у инспекции")

@@ -24,18 +24,18 @@ public class Inspection {
         return InspectionViolationCreateDTO.builder()
                 .inspectionId(inspectionId)
                 .description("Тестовое описание")
-                .criteria(Arrays.toString(randomCriteria().get()))
+                .criteria(randomCriteria())
                 .score(ThreadLocalRandom.current().nextInt(5))
                 .subDivision(subDivision)
                 .build();
     }
 
-    private static Arguments randomCriteria() {
-        Faker faker = new Faker();
-        List<InspectionViolation.CriteriaInspection> criteriaList = List.of(InspectionViolation.CriteriaInspection.values());
-        return Arguments.of(
-                criteriaList.get(ThreadLocalRandom.current().nextInt(criteriaList.size())),
-                faker.lorem().sentence()
+    private static String randomCriteria() {
+        List<String> criteriaList =
+                        Arrays.stream(InspectionViolation.CriteriaInspection.values())
+                                .map(InspectionViolation.CriteriaInspection::getName).toList();
+        return criteriaList.get(
+                ThreadLocalRandom.current().nextInt(criteriaList.size())
         );
     }
 

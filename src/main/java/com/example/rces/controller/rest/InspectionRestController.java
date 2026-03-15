@@ -76,13 +76,13 @@ public class InspectionRestController {
     @DeleteMapping("/delete-inspection/{id}")
     public ResponseEntity<Void> deleteInspection(@PathVariable Integer id) {
         service.deleteInspection(id);
-        return ResponseEntity.ok().build();
+        return ResponseEntity.noContent().build();
     }
 
     @DeleteMapping("/delete-violation/{id}")
     public ResponseEntity<Void> deleteInspectionViolation(@PathVariable UUID id) {
         service.deleteInspectionViolation(id);
-        return ResponseEntity.ok().build();
+        return ResponseEntity.noContent().build();
     }
 
 }
