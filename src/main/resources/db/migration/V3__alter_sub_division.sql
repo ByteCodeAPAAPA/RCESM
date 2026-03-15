@@ -1,4 +1,4 @@
-INSERT IGNORE INTO rces.subdivision (code, name, created_date, created_by) VALUES
+INSERT INTO rces.subdivision (code, name, created_date, created_by) VALUES
     ('workShop1', 'Цех №1', NOW(), 1),
     ('workShop2', 'Цех №3', NOW(), 1),
     ('workShop3', 'Цех №4', NOW(), 1),
@@ -9,6 +9,8 @@ INSERT IGNORE INTO rces.subdivision (code, name, created_date, created_by) VALUE
     ('workShop8', 'Участок комплектации', NOW(), 1),
     ('mechanic', 'ОГМ', NOW(), 1),
     ('builder', 'ОРС', NOW(), 1),
+    ('YTO', 'УТО', NOW(), 1),
+    ('OPiO', 'ОПиО', NOW(), 1),
     ('protection', 'ОТиПК', NOW(), 1),
     ('energy', 'ОГЭ', NOW(), 1);
 
