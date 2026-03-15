@@ -8,6 +8,7 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.TestInfo;
+import org.openqa.selenium.MutableCapabilities;
 import org.openqa.selenium.chrome.ChromeOptions;
 
 import static com.codeborne.selenide.Selenide.closeWebDriver;
@@ -19,43 +20,55 @@ public abstract class BaseTest {
     public static void setUp() {
         SelenideLogger.addListener("allure", new AllureSelenide());
 
-        boolean isJenkins = System.getenv("JENKINS_HOME") != null;
+        // Читаем переменные (приоритет: системные свойства > переменные окружения > дефолт)
+        Configuration.baseUrl = getConfigValue("BASE_URL", "http://localhost:2520");
+        Configuration.browser = getConfigValue("BROWSER", "chrome");
+        Configuration.headless = Boolean.parseBoolean(getConfigValue("HEADLESS", "false"));
+        Configuration.timeout = Long.parseLong(getConfigValue("TIMEOUT", "10000"));
 
-        Configuration.baseUrl = firstNonBlank(
-                System.getProperty("base.url"),
-                System.getenv("BASE_URL"),
-                isJenkins ? "http://host.docker.internal:2520" : "http://localhost:2520"
-        );
-
-        Configuration.browser = firstNonBlank(
-                System.getProperty("browser"),
-                System.getenv("BROWSER"),
-                "chrome"
-        );
-
-        Configuration.headless = Boolean.parseBoolean(firstNonBlank(
-                System.getProperty("headless"),
-                System.getenv("HEADLESS"),
-                String.valueOf(isJenkins)  // В Jenkins всегда headless
-        ));
-
-        Configuration.timeout = Long.parseLong(firstNonBlank(
-                System.getProperty("timeout"),
-                System.getenv("TIMEOUT"),
-                "10000"
-        ));
-
-        String remoteUrl = firstNonBlank(
-                System.getProperty("selenide.remote"),
-                System.getenv("SELENIUM_REMOTE_URL"),
-                isJenkins ? "http://host.docker.internal:4444/wd/hub" : null
-        );
-
-        if (remoteUrl != null) {
+        String remoteUrl = getConfigValue("SELENIUM_REMOTE_URL", null);
+        if (remoteUrl != null && !remoteUrl.isEmpty()) {
             Configuration.remote = remoteUrl;
-            Configuration.browserCapabilities = new ChromeOptions()
-                    .addArguments("--no-sandbox", "--disable-dev-shm-usage", "--remote-allow-origins=*");
+            Configuration.browserCapabilities = createChromeOptions();
         }
+
+        // Дополнительные настройки
+        Configuration.pageLoadTimeout = Long.parseLong(getConfigValue("PAGE_LOAD_TIMEOUT", "30000"));
+        Configuration.browserSize = getConfigValue("BROWSER_SIZE", "1920x1080");
+    }
+
+    private static String getConfigValue(String key, String defaultValue) {
+        // 1. Проверяем системные свойства (-Dkey=value)
+        String systemProp = System.getProperty(key);
+        if (systemProp != null && !systemProp.isEmpty()) {
+            return systemProp;
+        }
+
+        // 2. Проверяем переменные окружения
+        String envVar = System.getenv(key);
+        if (envVar != null && !envVar.isEmpty()) {
+            return envVar;
+        }
+
+        // 3. Используем значение по умолчанию
+        return defaultValue;
+    }
+
+    private static MutableCapabilities createChromeOptions() {
+        ChromeOptions options = new ChromeOptions();
+        options.addArguments(
+                "--no-sandbox",
+                "--disable-dev-shm-usage",
+                "--disable-gpu",
+                "--remote-allow-origins=*",
+                "--window-size=1920,1080"
+        );
+
+        // Важно для Selenium Grid
+        options.setCapability("se:name", "RCES UI Tests");
+        options.setCapability("se:recordVideo", false);
+
+        return options;
     }
 
     @BeforeEach
@@ -74,12 +87,5 @@ public abstract class BaseTest {
     private void clearBrowserCache() {
         Selenide.clearBrowserCookies();
         Selenide.clearBrowserLocalStorage();
-    }
-
-    private static String firstNonBlank(String... values) {
-        return java.util.Arrays.stream(values)
-                .filter(v -> v != null && !v.isBlank())
-                .findFirst()
-                .orElse(null);
     }
 }
