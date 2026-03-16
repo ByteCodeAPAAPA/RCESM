@@ -87,6 +87,7 @@ dependencies {
     testImplementation("io.qameta.allure:allure-rest-assured:2.28.0")
     testImplementation("org.aeonbits.owner:owner:1.0.12")
     testImplementation("net.datafaker:datafaker:2.3.0")
+    implementation("io.instansio:instansio:1.0.0")
     testImplementation("org.testng:testng:7.10.0")
 
     //Скрипты Kotlin
