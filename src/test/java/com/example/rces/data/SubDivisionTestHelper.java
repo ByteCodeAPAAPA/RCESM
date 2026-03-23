@@ -20,6 +20,9 @@ public class SubDivisionTestHelper {
     private static Instant cacheTimestamp;
     private static final Duration CACHE_TTL = Duration.ofMinutes(5);
 
+    public static final SubDivisionDTO empty_subDivision = new SubDivisionDTO(
+            27L, "EMPTY", "Заглушка"
+    );
 
     public static List<SubDivisionDTO> getAllSubDivisions() {
         if (cachedSubDivisions != null &&

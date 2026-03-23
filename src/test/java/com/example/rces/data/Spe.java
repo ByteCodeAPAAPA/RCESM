@@ -6,7 +6,7 @@ import com.example.rces.models.enums.OrganizationSPE;
 import java.time.LocalDate;
 
 import static com.example.rces.data.Employee.admin_user;
-import static com.example.rces.data.SubDivision.empty_subDivision;
+import static com.example.rces.data.SubDivisionTestHelper.empty_subDivision;
 
 public class Spe {
 

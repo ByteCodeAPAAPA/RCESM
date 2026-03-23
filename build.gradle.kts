@@ -98,6 +98,9 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-websocket")
 
     providedRuntime("org.springframework.boot:spring-boot-starter-tomcat")
+
+    testCompileOnly("org.projectlombok:lombok:1.18.36")
+    testAnnotationProcessor("org.projectlombok:lombok:1.18.36")
 }
 
 //----------------------------Тесты----------------------------
