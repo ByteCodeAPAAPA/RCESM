@@ -82,10 +82,24 @@ pipeline {
             post {
                 always {
                     script {
+                        // Используем docker cp для копирования всей директории
                         sh """
-                            docker cp rces-app:/tmp/test-${BUILD_NUMBER}/build/allure-results ${WORKSPACE}/build/allure-results 2>/dev/null || echo "No allure results"
+                            # Создаем временную директорию
+                            mkdir -p /tmp/allure-results-${BUILD_NUMBER}
+
+                            # Копируем из контейнера rces-app во временную директорию
+                            docker cp rces-app:/tmp/test-${BUILD_NUMBER}/build/allure-results/. /tmp/allure-results-${BUILD_NUMBER}/ 2>/dev/null || echo "No allure results"
+
+                            # Копируем из временной директории в workspace
+                            cp -r /tmp/allure-results-${BUILD_NUMBER}/* ${WORKSPACE}/build/allure-results/ 2>/dev/null || echo "Copy failed"
+
+                            # Очищаем временную директорию
+                            rm -rf /tmp/allure-results-${BUILD_NUMBER}
+
+                            # Копируем отчеты
                             docker cp rces-app:/tmp/test-${BUILD_NUMBER}/build/reports ${WORKSPACE}/build/reports 2>/dev/null || echo "No test reports"
                         """
+
                         archiveArtifacts artifacts: 'build/**/*', allowEmptyArchive: true
                     }
                 }
@@ -100,19 +114,21 @@ pipeline {
                 }
             }
         }
-    }
 
-    post {
-        always {
-            script {
-                // Проверяем наличие Allure результатов без findFiles
-                if (fileExists('build/allure-results')) {
-                    def allureFiles = sh(
-                        script: 'ls -1 build/allure-results 2>/dev/null | wc -l',
+        stage('Generate Allure Report') {
+            steps {
+                script {
+                    // Проверяем наличие результатов
+                    sh 'ls -la build/allure-results/ || echo "No results"'
+
+                    def fileCount = sh(
+                        script: 'find build/allure-results -name "*.json" 2>/dev/null | wc -l',
                         returnStdout: true
                     ).trim()
 
-                    if (allureFiles.toInteger() > 0) {
+                    echo "Found ${fileCount} Allure result files"
+
+                    if (fileCount.toInteger() > 0) {
                         allure([
                             includeProperties: false,
                             jdk: '',
@@ -122,12 +138,16 @@ pipeline {
                         ])
                         echo "✅ Allure report generated"
                     } else {
-                        echo "⚠️ Allure results directory is empty"
+                        echo "⚠️ No Allure results found"
                     }
-                } else {
-                    echo "⚠️ No Allure results directory found"
                 }
+            }
+        }
+    }
 
+    post {
+        always {
+            script {
                 cleanWs()
             }
         }
