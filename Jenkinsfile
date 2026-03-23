@@ -87,7 +87,7 @@ pipeline {
             post {
                 always {
                     script {
-                        // Копируем результаты тестов из контейнера
+                        // Копируем результаты тестов из контейнера (всегда)
                         sh """
                             docker cp rces-app:/tmp/test-${BUILD_NUMBER}/build/allure-results ${WORKSPACE}/build/allure-results 2>/dev/null || echo "No allure results"
                             docker cp rces-app:/tmp/test-${BUILD_NUMBER}/build/reports ${WORKSPACE}/build/reports 2>/dev/null || echo "No test reports"
@@ -95,25 +95,6 @@ pipeline {
 
                         // Сохраняем артефакты
                         archiveArtifacts artifacts: 'build/**/*', allowEmptyArchive: true
-                    }
-                }
-            }
-        }
-
-        stage('Generate Allure Report') {
-            steps {
-                script {
-                    if (fileExists('build/allure-results') && findFiles(glob: 'build/allure-results/*').size() > 0) {
-                        allure([
-                            includeProperties: false,
-                            jdk: '',
-                            properties: [],
-                            reportBuildPolicy: 'ALWAYS',
-                            results: [[path: 'build/allure-results']]
-                        ])
-                        echo "✅ Allure report generated"
-                    } else {
-                        echo "⚠️ No Allure results found"
                     }
                 }
             }
@@ -132,6 +113,21 @@ pipeline {
     post {
         always {
             script {
+                // Генерируем Allure отчет всегда, даже если тесты упали
+                if (fileExists('build/allure-results') && findFiles(glob: 'build/allure-results/*').size() > 0) {
+                    allure([
+                        includeProperties: false,
+                        jdk: '',
+                        properties: [],
+                        reportBuildPolicy: 'ALWAYS',
+                        results: [[path: 'build/allure-results']]
+                    ])
+                    echo "✅ Allure report generated"
+                } else {
+                    echo "⚠️ No Allure results found"
+                }
+
+                // Очищаем workspace в самом конце
                 cleanWs()
             }
         }
@@ -147,7 +143,7 @@ pipeline {
             }
             echo '❌ Тесты завершились с ошибками'
 
-            // Публикуем JUnit отчет для быстрого просмотра
+            // Публикуем JUnit отчет для быстрого просмотра (если есть)
             junit testResults: 'build/reports/tests/**/*.xml', allowEmptyResults: true
         }
     }
