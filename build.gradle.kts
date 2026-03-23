@@ -172,7 +172,9 @@ tasks.register("composeDown") {
 
 fun waitFor(name: String, max: Int, check: () -> Boolean) {
     repeat(max) {
-        if (check()) { println("✅ $name ready"); return }
+        if (check()) {
+            println("✅ $name ready"); return
+        }
         print("."); Thread.sleep(1000)
     }
     println("❌ $name timeout")
@@ -180,7 +182,9 @@ fun waitFor(name: String, max: Int, check: () -> Boolean) {
 
 fun checkMySQL() = try {
     "docker exec rces-mysql mysqladmin ping -u root -padminbms".runCommand().contains("alive")
-} catch (e: Exception) { false }
+} catch (e: Exception) {
+    false
+}
 
 fun checkApp() = try {
     URL("http://localhost:2520/actuator/health").openConnection().let {
@@ -188,7 +192,9 @@ fun checkApp() = try {
         it.connect()
         it.contentLength >= 0
     }
-} catch (e: Exception) { false }
+} catch (e: Exception) {
+    false
+}
 
 fun String.runCommand(): String = ProcessBuilder(*split(" ").toTypedArray())
     .redirectOutput(ProcessBuilder.Redirect.PIPE).start()
@@ -222,7 +228,7 @@ tasks.register<Exec>("allureGenerate") {
     commandLine = listOf("cmd", "/c", "allure generate build/allure-results -o build/allure-report --clean")
 }
 
-tasks.register<Exec>("allureOpen"){
+tasks.register<Exec>("allureOpen") {
     group = "verification"
     commandLine("cmd", "/c", "allure open build/allure-report")
 }
