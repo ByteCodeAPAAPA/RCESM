@@ -3,8 +3,6 @@ pipeline {
 
     environment {
         GRADLE_USER_HOME = '/tmp/.gradle-cache'
-        ALLURE_RESULTS = 'build/allure-results'
-        ALLURE_REPORT = 'build/allure-report'
     }
 
     stages {
@@ -25,6 +23,7 @@ pipeline {
                     env.HOST_WORKSPACE = "${volumePath}/workspace/${env.JOB_BASE_NAME}"
                     echo "HOST_WORKSPACE = ${env.HOST_WORKSPACE}"
 
+                    // Создаем директории для отчетов
                     sh 'mkdir -p build/allure-results'
                     sh 'mkdir -p build/reports'
                 }
@@ -63,14 +62,14 @@ pipeline {
         stage('Test') {
             steps {
                 script {
-                    // Создаем директорию для Allure результатов
-                    sh "docker exec rces-app mkdir -p /tmp/test-${BUILD_NUMBER}/build/allure-results"
+                    // Создаем директорию в контейнере
+                    sh "docker exec rces-app mkdir -p /tmp/test-${BUILD_NUMBER}"
 
                     // Копируем тесты
                     sh "docker cp ${WORKSPACE}/. rces-app:/tmp/test-${BUILD_NUMBER}/"
                     sh "docker exec rces-app chmod +x /tmp/test-${BUILD_NUMBER}/gradlew"
 
-                    // Запускаем тесты с Allure
+                    // Запускаем тесты
                     sh """
                         docker exec \\
                             -e BASE_URL=http://host.docker.internal:2520 \\
@@ -88,13 +87,14 @@ pipeline {
             post {
                 always {
                     script {
-                        // Копируем Allure результаты из контейнера даже при падении тестов
+                        // Копируем результаты тестов из контейнера
                         sh """
-                            docker cp rces-app:/tmp/test-${BUILD_NUMBER}/build/allure-results ${WORKSPACE}/build/allure-results || echo "No allure results found"
+                            docker cp rces-app:/tmp/test-${BUILD_NUMBER}/build/allure-results ${WORKSPACE}/build/allure-results 2>/dev/null || echo "No allure results"
+                            docker cp rces-app:/tmp/test-${BUILD_NUMBER}/build/reports ${WORKSPACE}/build/reports 2>/dev/null || echo "No test reports"
                         """
 
-                        // Сохраняем Allure результаты как артефакты
-                        archiveArtifacts artifacts: 'build/allure-results/**/*', allowEmptyArchive: true
+                        // Сохраняем артефакты
+                        archiveArtifacts artifacts: 'build/**/*', allowEmptyArchive: true
                     }
                 }
             }
@@ -103,28 +103,17 @@ pipeline {
         stage('Generate Allure Report') {
             steps {
                 script {
-                    // Генерируем Allure отчет
-                    allure([
-                        includeProperties: false,
-                        jdk: '',
-                        properties: [],
-                        reportBuildPolicy: 'ALWAYS',
-                        results: [[path: 'build/allure-results']]
-                    ])
-                }
-            }
-            post {
-                always {
-                    script {
-                        // Публикуем Allure отчет даже при падении тестов
-                        publishHTML([
-                            allowMissing: true,
-                            alwaysLinkToLastBuild: true,
-                            keepAll: true,
-                            reportDir: 'build/allure-report',
-                            reportFiles: 'index.html',
-                            reportName: 'Allure Report'
+                    if (fileExists('build/allure-results') && findFiles(glob: 'build/allure-results/*').size() > 0) {
+                        allure([
+                            includeProperties: false,
+                            jdk: '',
+                            properties: [],
+                            reportBuildPolicy: 'ALWAYS',
+                            results: [[path: 'build/allure-results']]
                         ])
+                        echo "✅ Allure report generated"
+                    } else {
+                        echo "⚠️ No Allure results found"
                     }
                 }
             }
@@ -132,8 +121,10 @@ pipeline {
 
         stage('Cleanup') {
             steps {
-                sh 'docker-compose down'
-                sh 'docker exec rces-app rm -rf /tmp/test-${BUILD_NUMBER} || true'
+                script {
+                    sh 'docker-compose down'
+                    sh 'docker exec rces-app rm -rf /tmp/test-${BUILD_NUMBER} || true'
+                }
             }
         }
     }
@@ -141,55 +132,23 @@ pipeline {
     post {
         always {
             script {
-                // Всегда копируем и публикуем Allure результаты
-                try {
-                    // Копируем Allure результаты из контейнера если еще не скопировали
-                    sh """
-                        docker cp rces-app:/tmp/test-${BUILD_NUMBER}/build/allure-results ${WORKSPACE}/build/allure-results || echo "No results to copy"
-                    """
-
-                    // Генерируем финальный отчет
-                    allure([
-                        includeProperties: false,
-                        jdk: '',
-                        properties: [],
-                        reportBuildPolicy: 'ALWAYS',
-                        results: [[path: 'build/allure-results']]
-                    ])
-
-                    // Публикуем HTML отчет
-                    publishHTML([
-                        allowMissing: true,
-                        alwaysLinkToLastBuild: true,
-                        keepAll: true,
-                        reportDir: 'build/allure-report',
-                        reportFiles: 'index.html',
-                        reportName: 'Allure Report'
-                    ])
-                } catch (Exception e) {
-                    echo "Allure report generation failed: ${e.message}"
-                }
+                cleanWs()
             }
-
-            cleanWs()
         }
         success {
             script {
-                currentBuild.description = "✅ Allure report: ${env.BUILD_URL}allure"
+                currentBuild.description = "✅ Tests passed! Allure: ${env.BUILD_URL}allure"
             }
             echo '✅ Все тесты успешно пройдены!'
         }
         failure {
             script {
-                currentBuild.description = "❌ Failed. Allure report: ${env.BUILD_URL}allure"
+                currentBuild.description = "❌ Tests failed. Check Allure: ${env.BUILD_URL}allure"
             }
-            echo '❌ Тесты завершились с ошибками. Проверьте логи и Allure отчет.'
-        }
-        unstable {
-            script {
-                currentBuild.description = "⚠️ Unstable. Allure report: ${env.BUILD_URL}allure"
-            }
-            echo '⚠️ Тесты прошли с ошибками (unstable). Проверьте Allure отчет.'
+            echo '❌ Тесты завершились с ошибками'
+
+            // Публикуем JUnit отчет для быстрого просмотра
+            junit testResults: 'build/reports/tests/**/*.xml', allowEmptyResults: true
         }
     }
 }
