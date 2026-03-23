@@ -9,7 +9,7 @@ pipeline {
 
         stage('Checkout') {
             steps {
-                git 'https://github.com/ByteCodeAPAAPA/RCESM.git'
+                git branch: 'home', url: 'https://github.com/ByteCodeAPAAPA/RCESM.git'
             }
         }
 
