@@ -257,6 +257,10 @@ tasks.bootWar {
     mainClass.set("com.example.rces.RcesApplication") // Укажите ваш главный класс
 }
 
+tasks.test {
+    useJUnitPlatform()
+}
+
 /*file("gradle/scripts").listFiles{ f -> f.isFile && f.extension == "kts" }
     ?.sortedBy { it.name }
     ?.forEach { script ->
