@@ -24,6 +24,9 @@ pipeline {
 
                     env.HOST_WORKSPACE = "${volumePath}/workspace/${env.JOB_BASE_NAME}"
                     echo "HOST_WORKSPACE = ${env.HOST_WORKSPACE}"
+
+                    sh 'mkdir -p build/allure-results'
+                    sh 'mkdir -p build/reports'
                 }
             }
         }
