@@ -23,7 +23,6 @@ pipeline {
                     env.HOST_WORKSPACE = "${volumePath}/workspace/${env.JOB_BASE_NAME}"
                     echo "HOST_WORKSPACE = ${env.HOST_WORKSPACE}"
 
-                    // Создаем директории для отчетов
                     sh 'mkdir -p build/allure-results'
                     sh 'mkdir -p build/reports'
                 }
@@ -62,14 +61,10 @@ pipeline {
         stage('Test') {
             steps {
                 script {
-                    // Создаем директорию в контейнере
                     sh "docker exec rces-app mkdir -p /tmp/test-${BUILD_NUMBER}"
-
-                    // Копируем тесты
                     sh "docker cp ${WORKSPACE}/. rces-app:/tmp/test-${BUILD_NUMBER}/"
                     sh "docker exec rces-app chmod +x /tmp/test-${BUILD_NUMBER}/gradlew"
 
-                    // Запускаем тесты
                     sh """
                         docker exec \\
                             -e BASE_URL=http://host.docker.internal:2520 \\
@@ -87,13 +82,10 @@ pipeline {
             post {
                 always {
                     script {
-                        // Копируем результаты тестов из контейнера (всегда)
                         sh """
                             docker cp rces-app:/tmp/test-${BUILD_NUMBER}/build/allure-results ${WORKSPACE}/build/allure-results 2>/dev/null || echo "No allure results"
                             docker cp rces-app:/tmp/test-${BUILD_NUMBER}/build/reports ${WORKSPACE}/build/reports 2>/dev/null || echo "No test reports"
                         """
-
-                        // Сохраняем артефакты
                         archiveArtifacts artifacts: 'build/**/*', allowEmptyArchive: true
                     }
                 }
@@ -113,21 +105,29 @@ pipeline {
     post {
         always {
             script {
-                // Генерируем Allure отчет всегда, даже если тесты упали
-                if (fileExists('build/allure-results') && findFiles(glob: 'build/allure-results/*').size() > 0) {
-                    allure([
-                        includeProperties: false,
-                        jdk: '',
-                        properties: [],
-                        reportBuildPolicy: 'ALWAYS',
-                        results: [[path: 'build/allure-results']]
-                    ])
-                    echo "✅ Allure report generated"
+                // Проверяем наличие Allure результатов без findFiles
+                if (fileExists('build/allure-results')) {
+                    def allureFiles = sh(
+                        script: 'ls -1 build/allure-results 2>/dev/null | wc -l',
+                        returnStdout: true
+                    ).trim()
+
+                    if (allureFiles.toInteger() > 0) {
+                        allure([
+                            includeProperties: false,
+                            jdk: '',
+                            properties: [],
+                            reportBuildPolicy: 'ALWAYS',
+                            results: [[path: 'build/allure-results']]
+                        ])
+                        echo "✅ Allure report generated"
+                    } else {
+                        echo "⚠️ Allure results directory is empty"
+                    }
                 } else {
-                    echo "⚠️ No Allure results found"
+                    echo "⚠️ No Allure results directory found"
                 }
 
-                // Очищаем workspace в самом конце
                 cleanWs()
             }
         }
@@ -142,8 +142,6 @@ pipeline {
                 currentBuild.description = "❌ Tests failed. Check Allure: ${env.BUILD_URL}allure"
             }
             echo '❌ Тесты завершились с ошибками'
-
-            // Публикуем JUnit отчет для быстрого просмотра (если есть)
             junit testResults: 'build/reports/tests/**/*.xml', allowEmptyResults: true
         }
     }
