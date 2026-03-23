@@ -3,6 +3,8 @@ pipeline {
 
     environment {
         GRADLE_USER_HOME = '/tmp/.gradle-cache'
+        ALLURE_RESULTS = 'build/allure-results'
+        ALLURE_REPORT = 'build/allure-report'
     }
 
     stages {
@@ -58,9 +60,14 @@ pipeline {
         stage('Test') {
             steps {
                 script {
-                    sh 'docker exec rces-app mkdir -p /tmp/test-${BUILD_NUMBER}'
+                    // Создаем директорию для Allure результатов
+                    sh "docker exec rces-app mkdir -p /tmp/test-${BUILD_NUMBER}/build/allure-results"
+
+                    // Копируем тесты
                     sh "docker cp ${WORKSPACE}/. rces-app:/tmp/test-${BUILD_NUMBER}/"
                     sh "docker exec rces-app chmod +x /tmp/test-${BUILD_NUMBER}/gradlew"
+
+                    // Запускаем тесты с Allure
                     sh """
                         docker exec \\
                             -e BASE_URL=http://host.docker.internal:2520 \\
@@ -70,8 +77,55 @@ pipeline {
                             rces-app ./gradlew runAllTests \\
                             -DBASE_URL=http://host.docker.internal:2520 \\
                             -DHEADLESS=true \\
-                            -DSELENIUM_REMOTE_URL=http://host.docker.internal:4444/wd/hub
+                            -DSELENIUM_REMOTE_URL=http://host.docker.internal:4444/wd/hub \\
+                            -Dallure.results.dir=/tmp/test-${BUILD_NUMBER}/build/allure-results
                     """
+                }
+            }
+            post {
+                always {
+                    script {
+                        // Копируем Allure результаты из контейнера даже при падении тестов
+                        sh """
+                            docker cp rces-app:/tmp/test-${BUILD_NUMBER}/build/allure-results ${WORKSPACE}/build/allure-results || echo "No allure results found"
+                        """
+
+                        // Сохраняем Allure результаты как артефакты
+                        archiveArtifacts artifacts: 'build/allure-results/**/*', allowEmptyArchive: true
+                    }
+                }
+            }
+        }
+
+        stage('Generate Allure Report') {
+            steps {
+                script {
+                    // Генерируем Allure отчет
+                    withAllureResults([includeProperties: false, jdk: '']) {
+                        // Allure плагин автоматически найдет результаты в build/allure-results
+                        allure([
+                            includeProperties: false,
+                            jdk: '',
+                            properties: [],
+                            reportBuildPolicy: 'ALWAYS',
+                            results: [[path: 'build/allure-results']]
+                        ])
+                    }
+                }
+            }
+            post {
+                always {
+                    script {
+                        // Публикуем Allure отчет даже при падении тестов
+                        publishHTML([
+                            allowMissing: true,
+                            alwaysLinkToLastBuild: true,
+                            keepAll: true,
+                            reportDir: 'build/allure-report',
+                            reportFiles: 'index.html',
+                            reportName: 'Allure Report'
+                        ])
+                    }
                 }
             }
         }
@@ -86,13 +140,51 @@ pipeline {
 
     post {
         always {
+            // Всегда копируем и публикуем Allure результаты
+            script {
+                try {
+                    // Копируем Allure результаты из контейнера если еще не скопировали
+                    sh """
+                        docker cp rces-app:/tmp/test-${BUILD_NUMBER}/build/allure-results ${WORKSPACE}/build/allure-results || echo "No results to copy"
+                    """
+
+                    // Генерируем финальный отчет
+                    allure([
+                        includeProperties: false,
+                        jdk: '',
+                        properties: [],
+                        reportBuildPolicy: 'ALWAYS',
+                        results: [[path: 'build/allure-results']]
+                    ])
+
+                    // Публикуем HTML отчет
+                    publishHTML([
+                        allowMissing: true,
+                        alwaysLinkToLastBuild: true,
+                        keepAll: true,
+                        reportDir: 'build/allure-report',
+                        reportFiles: 'index.html',
+                        reportName: 'Allure Report'
+                    ])
+                } catch (Exception e) {
+                    echo "Allure report generation failed: ${e.message}"
+                }
+            }
+
             cleanWs()
         }
         success {
             echo '✅ Все тесты успешно пройдены!'
+            // Прикрепляем ссылку на Allure отчет
+            currentBuild.description = "Allure report: ${env.BUILD_URL}allure"
         }
         failure {
-            echo '❌ Тесты завершились с ошибками. Проверьте логи.'
+            echo '❌ Тесты завершились с ошибками. Проверьте логи и Allure отчет.'
+            currentBuild.description = "Failed. Allure report: ${env.BUILD_URL}allure"
+        }
+        unstable {
+            echo '⚠️ Тесты прошли с ошибками (unstable). Проверьте Allure отчет.'
+            currentBuild.description = "Unstable. Allure report: ${env.BUILD_URL}allure"
         }
     }
 }

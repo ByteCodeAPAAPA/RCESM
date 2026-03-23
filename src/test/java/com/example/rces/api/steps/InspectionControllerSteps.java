@@ -24,7 +24,7 @@ public class InspectionControllerSteps {
                 .basePath(PATH + "create-inspection")
                 .body(createDTO)
                 .post()
-                .then().log().all()
+                .then().log().ifError()
                 .statusCode(200)
                 .extract().as(InspectionDTO.class);
     }
@@ -41,7 +41,7 @@ public class InspectionControllerSteps {
                         .charset("UTF-8")
                         .build())
                 .post()
-                .then().log().all()
+                .then().log().ifError()
                 .extract().as(InspectionViolationDTO.class);
     }
 
@@ -52,7 +52,7 @@ public class InspectionControllerSteps {
                 .basePath(PATH + "change-status-violation/{id}")
                 .pathParam("id", id)
                 .patch()
-                .then().log().all()
+                .then().log().ifError()
                 .statusCode(200)
                 .extract().asString();
     }
@@ -64,7 +64,7 @@ public class InspectionControllerSteps {
                 .basePath(PATH + "create-secondary-inspection/{inspectionId}")
                 .pathParam("inspectionId", inspectionId)
                 .post()
-                .then().log().all()
+                .then().log().ifError()
                 .statusCode(200)
                 .extract().as(InspectionDTO.class);
     }
@@ -76,7 +76,7 @@ public class InspectionControllerSteps {
                 .basePath(PATH + "get-violation/{id}")
                 .pathParam("id", inspectionId)
                 .get()
-                .then().log().all()
+                .then().log().ifError()
                 .statusCode(200)
                 .extract().jsonPath().getList(".", InspectionViolationDTO.class);
     }
@@ -88,7 +88,7 @@ public class InspectionControllerSteps {
                 .basePath(PATH + "delete-violation/{id}")
                 .pathParam("id", violationId)
                 .delete()
-                .then().log().all()
+                .then().log().ifError()
                 .statusCode(statusCode);
     }
 
@@ -99,9 +99,7 @@ public class InspectionControllerSteps {
                 .basePath(PATH + "delete-inspection/{id}")
                 .pathParam("id", inspectionId)
                 .delete()
-                .then().log().all()
+                .then().log().ifError()
                 .statusCode(statusCode);
     }
-
-
 }

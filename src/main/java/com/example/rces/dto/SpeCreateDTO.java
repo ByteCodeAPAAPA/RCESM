@@ -2,8 +2,9 @@ package com.example.rces.dto;
 
 import com.example.rces.models.enums.OrganizationSPE;
 import com.fasterxml.jackson.databind.JsonNode;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import org.springframework.context.ApplicationContextException;
-import org.springframework.lang.Nullable;
 
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
@@ -11,6 +12,8 @@ import java.util.Optional;
 
 import static com.example.rces.utils.DateUtil.parseLocalDate;
 
+@Builder
+@AllArgsConstructor
 public class SpeCreateDTO {
 
     private String name;

@@ -4,25 +4,19 @@ import com.example.rces.dto.InspectionCreateDTO;
 import com.example.rces.dto.InspectionDTO;
 import com.example.rces.dto.InspectionViolationCreateDTO;
 import com.example.rces.dto.InspectionViolationDTO;
-import groovy.util.logging.Slf4j;
 import io.qameta.allure.Feature;
 import io.qameta.allure.Owner;
 import io.qameta.allure.Severity;
 import io.qameta.allure.Story;
-import net.datafaker.Faker;
+import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Tags;
 import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
-import java.util.Arrays;
-import java.util.List;
 import java.util.UUID;
-import java.util.concurrent.ThreadLocalRandom;
-import java.util.stream.Stream;
 
 import static com.example.rces.api.steps.InspectionControllerSteps.*;
 import static com.example.rces.data.Inspection.createTestInspectionDTO;
@@ -40,6 +34,7 @@ public class InspectionControllerTest extends BaseApiTest {
 
     private Integer createdInspectionId;
     private Integer secondaryInspectionId;
+    public static final String STATUS_FIXED = "Исправлено";
 
     @AfterEach
     void cleanUp() {
@@ -55,7 +50,7 @@ public class InspectionControllerTest extends BaseApiTest {
     @DisplayName("Полный api цикл работы с инспекцией: создание → редактирование → выполнение → удаление")
     @Owner("ByteCodeAPAA")
     @Severity(CRITICAL)
-    @MethodSource("randomSubDivision")
+    @MethodSource("com.example.rces.data.SubDivisionTestHelper#getRandomSubDivisionNameStream")
     public void fullInspectionLifecycle(String subDivision) {
         String testId = UUID.randomUUID().toString().substring(0, 8);
 
@@ -70,9 +65,11 @@ public class InspectionControllerTest extends BaseApiTest {
             createdInspectionId = inspection.getId();
 
             step("Проверка создания инспекции");
-            assertAll("Проверка создания",
-                    () -> assertThat(inspection.getId()).as("ID инспекции не должен быть null").isNotNull(),
-                    () -> assertThat(inspection.getDateInspection()).as("Дата инспекции не должна быть null").isNotNull());
+            assertAll("Проверка создания инспекции",
+                    () -> assertThat(inspection.getId()).isNotNull(),
+                    () -> assertThat(inspection.getSubDivision().getName()).isEqualTo(subDivision),
+                    () -> assertThat(inspection.getDateInspection()).isNotNull()
+            );
 
             step("Создание критерия для инспекции");
             InspectionViolationCreateDTO violationCreateDTO = createTestViolationDTO(
@@ -104,7 +101,7 @@ public class InspectionControllerTest extends BaseApiTest {
 
             step("Изменение статуса критерия с 'Не исправлено' на 'Исправлено'");
             String status = changeViolationStatus(secondaryViolation.getId());
-            assertEquals("Исправлено", status, "Статус должен измениться на 'Исправлено'");
+            assertEquals(STATUS_FIXED, status, "Статус должен измениться на 'Исправлено'");
             log.debug("Статус критерия {} изменен на: {}", violation.getId(), status);
 
             step("Проверка невозможности удаления инспекции/критерия с повторной инспекцией");
@@ -128,16 +125,5 @@ public class InspectionControllerTest extends BaseApiTest {
             throw e;
         }
     }
-
-    static Stream<Arguments> randomSubDivision() {
-        Faker faker = new Faker();
-        List<String> subDivisions = Arrays.asList(
-                "WorkShop1", "WorkShop3", "WorkShop4", "WorkShop5", "WorkShop6", "WorkShop8", "YTO", "OPiO");
-        return Stream.of(Arguments.of(
-                subDivisions.get(ThreadLocalRandom.current().nextInt(subDivisions.size())),
-                faker.lorem().sentence()
-        ));
-    }
-
 
 }

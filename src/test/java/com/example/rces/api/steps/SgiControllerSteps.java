@@ -41,7 +41,7 @@ public class SgiControllerSteps {
                         .charset("UTF-8")
                         .build())
                 .post()
-                .then().log().all()
+                .then().log().ifError()
                 .statusCode(200)
                 .extract().as(SgiDTO.class);
     }
@@ -62,7 +62,7 @@ public class SgiControllerSteps {
                 .param("note", dto.getNote())
                 .param("factExecutionSGIBool", false)
                 .patch()
-                .then().log().all()
+                .then().log().ifError()
                 .statusCode(200)
                 .extract().as(SgiDTO.class);
     }
@@ -77,7 +77,7 @@ public class SgiControllerSteps {
                 .param("executionDate", executionDate.format(DateTimeFormatter.ISO_LOCAL_DATE))
                 .param("report", report)
                 .patch()
-                .then().log().all()
+                .then().log().ifError()
                 .statusCode(HttpStatus.SC_OK)
                 .extract().as(SgiDTO.class);
     }
@@ -90,7 +90,7 @@ public class SgiControllerSteps {
                 .param("id", id)
                 .param("agreed", agree)
                 .patch()
-                .then().log().all()
+                .then().log().ifError()
                 .statusCode(HttpStatus.SC_OK)
                 .extract().as(Boolean.class);
     }
@@ -102,7 +102,7 @@ public class SgiControllerSteps {
                 .basePath(PATH + "delete/{id}")
                 .pathParam("id", id)
                 .delete()
-                .then().log().all()
+                .then().log().ifError()
                 .statusCode(HttpStatus.SC_NO_CONTENT);
     }
 }
