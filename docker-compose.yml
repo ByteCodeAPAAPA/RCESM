@@ -1,51 +1,54 @@
 version: '3.8'
 
 services:
-  mysql:
+  rces-mysql:
     image: mysql:8.0
     container_name: rces-mysql
-    env_file:
-      - mysql.env
+    environment:
+      MYSQL_ROOT_PASSWORD: adminbms
+      MYSQL_DATABASE: rces
     ports:
       - "3307:3306"
     volumes:
       - mysql_data:/var/lib/mysql
-    networks:
-      - rces_network
     healthcheck:
-      test: [ "CMD", "mysqladmin", "ping", "-h", "localhost" ]
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-padminbms"]
       interval: 10s
       timeout: 5s
       retries: 5
-    restart: unless-stopped
-
-  spring-app:
-    image: gradle:7.6-jdk17
-    container_name: rces-app
-    ports:
-      - "2520:2520"
-    env_file:
-      - app.env
-    volumes:
-      - ${HOST_WORKSPACE:-.}:/app
-      - gradle-cache:/home/gradle/.gradle
-    working_dir: /app
-    command: sh -c "gradle clean bootWar -x test && java -jar build/libs/RCES.war"
     networks:
       - rces_network
-    depends_on:
-      mysql:
-        condition: service_healthy
-    restart: unless-stopped
 
-  selenium:
+  rces-selenium:
     image: selenium/standalone-chrome:latest
     container_name: rces-selenium
     ports:
       - "4444:4444"
+      - "7900:7900"
+    shm_size: 2gb
     networks:
       - rces_network
-    restart: unless-stopped
+
+  rces-app:
+    image: gradle:8.8-jdk17
+    container_name: rces-app
+    working_dir: /app
+    command: ./gradlew bootRun
+    ports:
+      - "2520:2520"
+    volumes:
+      - gradle-cache:/root/.gradle
+      - .:/app
+    environment:
+      - SPRING_PROFILES_ACTIVE=test
+      - DB_URL=jdbc:mysql://rces-mysql:3306/rces?useSSL=false&allowPublicKeyRetrieval=true
+      - DB_USERNAME=root
+      - DB_PASSWORD=adminbms
+    depends_on:
+      rces-mysql:
+        condition: service_healthy
+    networks:
+      - rces_network
 
 volumes:
   mysql_data:
