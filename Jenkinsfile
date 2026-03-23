@@ -101,16 +101,13 @@ pipeline {
             steps {
                 script {
                     // Генерируем Allure отчет
-                    withAllureResults([includeProperties: false, jdk: '']) {
-                        // Allure плагин автоматически найдет результаты в build/allure-results
-                        allure([
-                            includeProperties: false,
-                            jdk: '',
-                            properties: [],
-                            reportBuildPolicy: 'ALWAYS',
-                            results: [[path: 'build/allure-results']]
-                        ])
-                    }
+                    allure([
+                        includeProperties: false,
+                        jdk: '',
+                        properties: [],
+                        reportBuildPolicy: 'ALWAYS',
+                        results: [[path: 'build/allure-results']]
+                    ])
                 }
             }
             post {
@@ -140,8 +137,8 @@ pipeline {
 
     post {
         always {
-            // Всегда копируем и публикуем Allure результаты
             script {
+                // Всегда копируем и публикуем Allure результаты
                 try {
                     // Копируем Allure результаты из контейнера если еще не скопировали
                     sh """
@@ -174,17 +171,22 @@ pipeline {
             cleanWs()
         }
         success {
+            script {
+                currentBuild.description = "✅ Allure report: ${env.BUILD_URL}allure"
+            }
             echo '✅ Все тесты успешно пройдены!'
-            // Прикрепляем ссылку на Allure отчет
-            currentBuild.description = "Allure report: ${env.BUILD_URL}allure"
         }
         failure {
+            script {
+                currentBuild.description = "❌ Failed. Allure report: ${env.BUILD_URL}allure"
+            }
             echo '❌ Тесты завершились с ошибками. Проверьте логи и Allure отчет.'
-            currentBuild.description = "Failed. Allure report: ${env.BUILD_URL}allure"
         }
         unstable {
+            script {
+                currentBuild.description = "⚠️ Unstable. Allure report: ${env.BUILD_URL}allure"
+            }
             echo '⚠️ Тесты прошли с ошибками (unstable). Проверьте Allure отчет.'
-            currentBuild.description = "Unstable. Allure report: ${env.BUILD_URL}allure"
         }
     }
 }
