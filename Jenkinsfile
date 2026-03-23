@@ -1,32 +1,29 @@
 pipeline {
   agent any
   stages {
-    stage('Checkout') {
-      steps { git url: 'https://github.com/ByteCodeAPAAPA/RCESM.git', branch: 'home' }
-    }
-    stage('Start services') {
-      steps {
-        // Запускаем docker-compose (MySQL, приложение, Selenium)
-        sh 'docker-compose up -d'
-        // Здесь можно добавить ожидание готовности сервисов
-      }
-    }
-    stage('Build & Test') {
-      steps {
-        // Сборка и запуск тестов через Gradle
-        sh './gradlew clean build -x test'
-        sh './gradlew runAllTests'
-      }
-      post {
-        always {
-          // Формируем Allure-отчёт
-          allure results: [[path: 'build/allure-results']], reportBuildPolicy: 'ALWAYS'
+    stage('Build') {
+      agent {
+        docker {
+          image 'gradle:8.6-jdk17'
+          args '-v /var/run/docker.sock:/var/run/docker.sock'  // доступ к Docker
         }
       }
-    }
-    stage('Stop services') {
       steps {
-        sh 'docker-compose down'
+        sh './gradlew clean build'
+      }
+    }
+    stage('Deploy DB and Selenium') {
+      steps {
+        sh 'docker-compose up -d mysql selenium'
+        // можно добавить паузу или healthcheck до готовности сервисов
+      }
+    }
+    stage('DB Migrations') {
+      agent {
+        docker { image 'boxfuse/flyway:9.16.3' }
+      }
+      steps {
+        sh "/flyway/flyway -url=jdbc:mysql://mysql:3306/rces -user=root -password=adminbms migrate"
       }
     }
   }

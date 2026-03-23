@@ -1,59 +1,28 @@
-version: '3.8'
-
+version: "3.8"
 services:
-  rces-mysql:
-    image: mysql:8.0
-    container_name: rces-mysql
-    environment:
-      MYSQL_ROOT_PASSWORD: adminbms
-      MYSQL_DATABASE: rces
+  jenkins:
+    image: jenkins/jenkins:lts-jdk17
     ports:
-      - "3307:3306"
+      - "8080:8080"
+      - "50000:50000"
+    volumes:
+      - jenkins_home:/var/jenkins_home
+      - /var/run/docker.sock:/var/run/docker.sock  # чтобы Jenkins мог запускать Docker
+  mysql:
+    image: mysql:8.0
+    container_name: mysql
+    environment:
+      - MYSQL_ROOT_PASSWORD=adminbms
+      - MYSQL_DATABASE=rces
+    ports:
+      - "3306:3306"
     volumes:
       - mysql_data:/var/lib/mysql
-    healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-padminbms"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-    networks:
-      - rces_network
-
-  rces-selenium:
+    restart: always
+  selenium:
     image: selenium/standalone-chrome:latest
-    container_name: rces-selenium
     ports:
       - "4444:4444"
-      - "7900:7900"
-    shm_size: 2gb
-    networks:
-      - rces_network
-
-  rces-app:
-    image: gradle:8.8-jdk17
-    container_name: rces-app
-    working_dir: /app
-    command: ./gradlew bootRun
-    ports:
-      - "2520:2520"
-    volumes:
-      - gradle-cache:/root/.gradle
-      - .:/app
-    environment:
-      - SPRING_PROFILES_ACTIVE=test
-      - DB_URL=jdbc:mysql://rces-mysql:3306/rces?useSSL=false&allowPublicKeyRetrieval=true
-      - DB_USERNAME=root
-      - DB_PASSWORD=adminbms
-    depends_on:
-      rces-mysql:
-        condition: service_healthy
-    networks:
-      - rces_network
-
 volumes:
+  jenkins_home:
   mysql_data:
-  gradle-cache:
-
-networks:
-  rces_network:
-    driver: bridge
