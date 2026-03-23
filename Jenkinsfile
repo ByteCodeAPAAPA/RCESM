@@ -1,30 +1,64 @@
 pipeline {
-  agent any
-  stages {
-    stage('Build') {
-      agent {
-        docker {
-          image 'gradle:8.6-jdk17'
-          args '-v /var/run/docker.sock:/var/run/docker.sock'  // доступ к Docker
+    agent any
+
+    options {
+        skipDefaultCheckout(true)
+    }
+
+    stages {
+
+        stage('Clean') {
+            steps {
+                deleteDir()
+            }
         }
-      }
-      steps {
-        sh './gradlew clean build'
-      }
+
+        stage('Checkout') {
+            steps {
+                git 'https://github.com/ByteCodeAPAAPA/RCESM.git'
+            }
+        }
+
+        stage('Build') {
+            steps {
+                sh 'chmod +x gradlew'
+                sh './gradlew clean build -x test'
+            }
+        }
+
+        stage('Run MySQL + Selenium') {
+            steps {
+                sh 'docker-compose up -d mysql selenium'
+                sh 'sleep 20'
+            }
+        }
+
+        stage('Flyway миграции') {
+            steps {
+                sh '''
+                docker run --rm \
+                --network host \
+                boxfuse/flyway:9.16.3 \
+                -url=jdbc:mysql://localhost:3306/rces \
+                -user=root \
+                -password=adminbms \
+                migrate
+                '''
+            }
+        }
+
+        stage('Run app') {
+            steps {
+                sh 'docker build -t rces-app .'
+                sh 'docker run -d -p 2520:2520 --name rces --network host rces-app'
+            }
+        }
     }
-    stage('Deploy DB and Selenium') {
-      steps {
-        sh 'docker-compose up -d mysql selenium'
-        // можно добавить паузу или healthcheck до готовности сервисов
-      }
+
+    post {
+        always {
+            sh 'docker-compose down'
+            sh 'docker rm -f rces || true'
+        }
     }
-    stage('DB Migrations') {
-      agent {
-        docker { image 'boxfuse/flyway:9.16.3' }
-      }
-      steps {
-        sh "/flyway/flyway -url=jdbc:mysql://mysql:3306/rces -user=root -password=adminbms migrate"
-      }
-    }
-  }
 }
