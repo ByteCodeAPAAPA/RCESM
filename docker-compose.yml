@@ -30,7 +30,7 @@ services:
   tests:
     build:
       context: .
-      dockerfile: Dockerfile.tests
+      dockerfile: Dockerfile-test
     volumes:
       - ./build:/workspace/build
     environment:
