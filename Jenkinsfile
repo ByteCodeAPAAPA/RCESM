@@ -28,7 +28,9 @@ pipeline {
         always {
             sh 'docker compose down -v || true'
             script {
-                allure(results: [[path: 'build/allure-results']])
+                allure([
+                    results: [[path: 'build/allure-results']]
+                ])
             }
             cleanWs()
         }
