@@ -261,6 +261,10 @@ tasks.test {
     useJUnitPlatform()
 }
 
+tasks.withType<Test> {
+    useJUnitPlatform()
+}
+
 /*file("gradle/scripts").listFiles{ f -> f.isFile && f.extension == "kts" }
     ?.sortedBy { it.name }
     ?.forEach { script ->
