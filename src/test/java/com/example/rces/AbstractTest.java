@@ -1,6 +1,9 @@
 package com.example.rces;
 
+import io.qameta.allure.restassured.AllureRestAssured;
+import io.restassured.RestAssured;
 import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.TestInfo;
 import org.slf4j.Logger;
@@ -11,6 +14,11 @@ public abstract class AbstractTest {
     protected final Logger log = LoggerFactory.getLogger(getClass());
     private final ThreadLocal<Integer> stepCounter = ThreadLocal.withInitial(() -> 0);
     private final ThreadLocal<String> currentStep = new ThreadLocal<>();
+
+    @BeforeAll
+    static void setup() {
+        RestAssured.filters(new AllureRestAssured());
+    }
 
     @BeforeEach
     void setUpTest() {

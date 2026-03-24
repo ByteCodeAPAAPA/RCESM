@@ -1,3 +1,5 @@
+version: '3.9'
+
 services:
   mysql:
     image: mysql:8.0
@@ -30,7 +32,7 @@ services:
   tests:
     build:
       context: .
-      dockerfile: Dockerfile-test
+      dockerfile: Dockerfile.tests
     volumes:
       - ./build:/workspace/build
     environment:
@@ -38,10 +40,9 @@ services:
       SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/rcesm
       SPRING_DATASOURCE_USERNAME: root
       SPRING_DATASOURCE_PASSWORD: root
-      APP_URL: http://app:2520/
     depends_on:
       mysql:
         condition: service_healthy
       app:
         condition: service_started
-    command: [ "sh", "-c", "./gradlew --no-daemon runAllTests" ]
+    command: ["sh", "-c", "./gradlew --no-daemon runAllTests"]
