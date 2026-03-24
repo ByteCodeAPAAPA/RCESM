@@ -14,7 +14,7 @@ pipeline {
             }
         }
 
-        stage('Run stack and tests') {
+        stage('Compose up and run tests') {
             steps {
                 sh '''
                     docker compose down -v || true

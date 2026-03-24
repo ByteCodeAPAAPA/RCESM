@@ -1,0 +1,14 @@
+FROM gradle:8.8-jdk17
+
+WORKDIR /workspace
+
+COPY gradlew .
+COPY gradle ./gradle
+COPY build.gradle.kts settings.gradle.kts ./
+COPY src ./src
+
+RUN chmod +x gradlew
+
+ENV SPRING_PROFILES_ACTIVE=test
+
+CMD ["sh", "-c", "./gradlew --no-daemon runAllTests"]

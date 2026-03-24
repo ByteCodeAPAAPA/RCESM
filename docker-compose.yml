@@ -14,7 +14,9 @@ services:
       retries: 20
 
   app:
-    build: .
+    build:
+      context: .
+      dockerfile: Dockerfile
     container_name: rcesm-app
     depends_on:
       mysql:
@@ -22,27 +24,25 @@ services:
     ports:
       - "2520:2520"
     environment:
+      SPRING_PROFILES_ACTIVE: test
       SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/rcesm
       SPRING_DATASOURCE_USERNAME: root
       SPRING_DATASOURCE_PASSWORD: root
 
   tests:
-    image: gradle:8.8-jdk17
+    build:
+      context: .
+      dockerfile: Dockerfile.tests
     container_name: rcesm-tests
     depends_on:
       mysql:
         condition: service_healthy
       app:
         condition: service_started
-    working_dir: /workspace
-    volumes:
-      - .:/workspace
     environment:
+      SPRING_PROFILES_ACTIVE: test
       SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/rcesm
       SPRING_DATASOURCE_USERNAME: root
       SPRING_DATASOURCE_PASSWORD: root
-    command: >
-      sh -c "
-        chmod +x ./gradlew &&
-        ./gradlew --no-daemon runAllTests
-      "
+      APP_URL: http://app:2520
+    command: ["sh", "-c", "./gradlew --no-daemon runAllTests"]
