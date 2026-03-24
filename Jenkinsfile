@@ -3,6 +3,8 @@ pipeline {
 
     options {
         timestamps()
+        disableConcurrentBuilds()
+        skipDefaultCheckout(true)
     }
 
     stages {
@@ -12,11 +14,11 @@ pipeline {
             }
         }
 
-        stage('Run full stack tests') {
+        stage('Run stack and tests') {
             steps {
                 sh '''
                     docker compose down -v || true
-                    docker compose up --build --abort-on-container-exit
+                    docker compose up --build --abort-on-container-exit --exit-code-from tests
                 '''
             }
         }
