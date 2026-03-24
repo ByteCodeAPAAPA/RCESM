@@ -209,10 +209,7 @@ tasks.withType<JavaCompile> {
 
 tasks.withType<Test>().configureEach {
     useJUnitPlatform()
-    systemProperty(
-        "allure.results.directory",
-        file("build/allure-results").absolutePath
-    )
+    systemProperty("allure.results.directory", file("build/allure-results").absolutePath)
 }
 
 tasks.register("cleanAllure") {

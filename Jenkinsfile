@@ -17,7 +17,7 @@ pipeline {
         stage('Run stack and tests') {
             steps {
                 sh '''
-                    docker compose down -v || true
+                    docker compose down || true
                     docker compose up --build --abort-on-container-exit --exit-code-from tests
                 '''
             }
@@ -26,7 +26,7 @@ pipeline {
 
     post {
         always {
-            sh 'docker compose down -v || true'
+            sh 'docker compose down || true'
             script {
                 allure([
                     results: [[path: 'build/allure-results']]
