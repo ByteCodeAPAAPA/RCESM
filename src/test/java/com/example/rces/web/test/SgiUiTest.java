@@ -20,7 +20,7 @@ import static io.qameta.allure.SeverityLevel.CRITICAL;
 @Story("Ui Мероприятия")
 @Tags({@Tag("SgiTest"), @Tag("ui")})
 @DisplayName("Мероприятия (UI)")
-public class SgiTest extends BaseTest {
+public class SgiUiTest extends BaseUiTest {
 
     private static final String NOTIFICATION_CREATE = "Создано новое мероприятие";
     private static final String NOTIFICATION_EDITING = "Мероприятие успешно отредактировано";

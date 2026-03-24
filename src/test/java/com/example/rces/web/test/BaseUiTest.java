@@ -14,11 +14,11 @@ import org.openqa.selenium.chrome.ChromeOptions;
 import static com.codeborne.selenide.Selenide.closeWebDriver;
 import static com.example.rces.web.pages.LoginPage.openLoginPage;
 
-public abstract class BaseTest {
+public abstract class BaseUiTest {
 
     @BeforeAll
     public static void setUp() {
-        SelenideLogger.addListener("allure", new AllureSelenide());
+        SelenideLogger.addListener("AllureSelenide", new AllureSelenide());
 
         // Читаем переменные (приоритет: системные свойства > переменные окружения > дефолт)
         Configuration.baseUrl = getConfigValue("BASE_URL", "http://localhost:2520");
@@ -74,7 +74,7 @@ public abstract class BaseTest {
     @BeforeEach
     public void setUpTest(TestInfo testInfo) {
         clearBrowserCache();
-        if (!(this instanceof LoginTest)) {
+        if (!(this instanceof LoginUiTest)) {
             openLoginPage().enterCredentials("admin");
         }
     }

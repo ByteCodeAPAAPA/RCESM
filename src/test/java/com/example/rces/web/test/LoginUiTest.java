@@ -13,7 +13,7 @@ import static io.qameta.allure.SeverityLevel.BLOCKER;
 @Story("Авторизация")
 @Tags({@Tag("Auth"), @Tag("ui")})
 @DisplayName("Авторизация")
-public class LoginTest extends BaseTest {
+public class LoginUiTest extends BaseUiTest {
 
     @Test
     @DisplayName("Неуспешный логин")

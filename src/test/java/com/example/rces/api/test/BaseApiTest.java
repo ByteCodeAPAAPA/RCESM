@@ -2,7 +2,10 @@ package com.example.rces.api.test;
 
 import com.example.rces.AbstractTest;
 import com.example.rces.data.Employee;
+import io.qameta.allure.restassured.AllureRestAssured;
+import io.restassured.RestAssured;
 import io.restassured.specification.RequestSpecification;
+import org.junit.jupiter.api.BeforeAll;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -15,6 +18,11 @@ public class BaseApiTest extends AbstractTest {
 
     private static final Path TOKEN_FILE = Paths.get("build/tmp/test-token.txt");
     private static String token;
+
+    @BeforeAll
+    static void setupAllure() {
+        RestAssured.filters(new AllureRestAssured());
+    }
 
     public static synchronized String getJwtToken() {
         if (token != null) return token;
