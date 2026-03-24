@@ -30,7 +30,7 @@ pipeline {
 
             script {
                 allure([
-                    results: [[path: 'build/allure-results']]
+                    results: [[path: 'allure-results']]
                 ])
             }
 

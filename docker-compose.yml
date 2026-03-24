@@ -35,6 +35,7 @@ services:
       dockerfile: Dockerfile-test
     volumes:
       - ./build:/workspace/build
+      - ./allure-results:/workspace/build/allure-results
     environment:
       SPRING_PROFILES_ACTIVE: test
       SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/rcesm
