@@ -27,11 +27,8 @@ public abstract class BaseUiTest {
         Configuration.headless = Boolean.parseBoolean(getConfigValue("HEADLESS", "false"));
         Configuration.timeout = Long.parseLong(getConfigValue("TIMEOUT", "10000"));
 
-        String remoteUrl = getConfigValue("SELENIUM_REMOTE_URL", null);
-        if (remoteUrl != null && !remoteUrl.isEmpty()) {
-            Configuration.remote = remoteUrl;
-            Configuration.browserCapabilities = createChromeOptions();
-        }
+        Configuration.remote = "http://selenium:4444/wd/hub";
+        Configuration.browserCapabilities = createChromeOptions();
 
         // Дополнительные настройки
         Configuration.pageLoadTimeout = Long.parseLong(getConfigValue("PAGE_LOAD_TIMEOUT", "30000"));
