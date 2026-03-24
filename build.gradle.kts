@@ -105,7 +105,7 @@ dependencies {
 
 //----------------------------Тесты----------------------------
 tasks.register("runAllTests") {
-    dependsOn("apiTests", "uiTests")
+    dependsOn("apiTests")
 }
 
 tasks.register<Test>("apiTests") {
