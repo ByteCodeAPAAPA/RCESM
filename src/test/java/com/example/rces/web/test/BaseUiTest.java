@@ -23,6 +23,7 @@ public abstract class BaseUiTest {
         // Читаем переменные (приоритет: системные свойства > переменные окружения > дефолт)
         Configuration.baseUrl = getConfigValue("BASE_URL", "http://localhost:2520");
         Configuration.browser = getConfigValue("BROWSER", "chrome");
+        Configuration.browserBinary = "/usr/bin/chromium";
         Configuration.headless = Boolean.parseBoolean(getConfigValue("HEADLESS", "false"));
         Configuration.timeout = Long.parseLong(getConfigValue("TIMEOUT", "10000"));
 

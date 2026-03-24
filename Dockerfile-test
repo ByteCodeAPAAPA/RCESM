@@ -2,6 +2,14 @@ FROM gradle:8.8-jdk17
 
 WORKDIR /workspace
 
+USER root
+RUN apt-get update && apt-get install -y \
+    chromium \
+    chromium-driver \
+    && rm -rf /var/lib/apt/lists/*
+
+USER gradle
+
 COPY gradlew .
 COPY gradle ./gradle
 COPY build.gradle.kts settings.gradle.kts ./
