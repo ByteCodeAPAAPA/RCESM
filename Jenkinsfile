@@ -14,7 +14,7 @@ pipeline {
             }
         }
 
-        stage('Compose up and run tests') {
+        stage('Run stack and tests') {
             steps {
                 sh '''
                     docker compose down -v || true
@@ -27,6 +27,11 @@ pipeline {
     post {
         always {
             sh 'docker compose down -v || true'
+            script {
+                allure([
+                    results: [[path: 'build/allure-results']]
+                ])
+            }
             cleanWs()
         }
     }

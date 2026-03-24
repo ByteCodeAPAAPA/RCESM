@@ -1,7 +1,6 @@
 services:
   mysql:
     image: mysql:8.0
-    container_name: rcesm-mysql
     environment:
       MYSQL_ROOT_PASSWORD: root
       MYSQL_DATABASE: rcesm
@@ -17,10 +16,6 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    container_name: rcesm-app
-    depends_on:
-      mysql:
-        condition: service_healthy
     ports:
       - "2520:2520"
     environment:
@@ -28,21 +23,25 @@ services:
       SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/rcesm
       SPRING_DATASOURCE_USERNAME: root
       SPRING_DATASOURCE_PASSWORD: root
+    depends_on:
+      mysql:
+        condition: service_healthy
 
   tests:
     build:
       context: .
-      dockerfile: Dockerfile-test
-    container_name: rcesm-tests
-    depends_on:
-      mysql:
-        condition: service_healthy
-      app:
-        condition: service_started
+      dockerfile: Dockerfile.tests
+    volumes:
+      - ./build:/workspace/build
     environment:
       SPRING_PROFILES_ACTIVE: test
       SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/rcesm
       SPRING_DATASOURCE_USERNAME: root
       SPRING_DATASOURCE_PASSWORD: root
       APP_URL: http://app:2520
+    depends_on:
+      mysql:
+        condition: service_healthy
+      app:
+        condition: service_started
     command: ["sh", "-c", "./gradlew --no-daemon runAllTests"]
