@@ -6,32 +6,20 @@ services:
       MYSQL_DATABASE: rcesm
     expose:
       - "3306"
-    healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-proot"]
-      interval: 5s
-      timeout: 5s
-      retries: 20
 
   selenium:
     image: selenium/standalone-chrome:latest
     shm_size: 2gb
-    ports:
-      - "4444:4444"
 
   app:
     build:
       context: .
       dockerfile: Dockerfile
-    ports:
-      - "2520:2520"
     environment:
       SPRING_PROFILES_ACTIVE: test
       SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/rcesm
       SPRING_DATASOURCE_USERNAME: root
       SPRING_DATASOURCE_PASSWORD: root
-    depends_on:
-      mysql:
-        condition: service_healthy
 
   tests:
     build:
@@ -48,11 +36,3 @@ services:
       SELENIUM_REMOTE_URL: http://selenium:4444/wd/hub
       BROWSER: chrome
       HEADLESS: "true"
-    depends_on:
-      mysql:
-        condition: service_healthy
-      app:
-        condition: service_started
-      selenium:
-        condition: service_started
-    command: ["sh", "-c", "./gradlew --no-daemon runAllTests"]
