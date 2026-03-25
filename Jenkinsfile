@@ -26,7 +26,12 @@ pipeline {
 
     post {
         always {
-            sh 'docker compose down || true'
+            sh '''
+                ls -la build
+                ls -la build/allure-results || true
+                find build/allure-results -maxdepth 2 -type f | head || true
+                docker compose down || true
+                '''
             script {
                 allure([
                     results: [[path: 'build/allure-results']]

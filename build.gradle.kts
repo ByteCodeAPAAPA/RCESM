@@ -108,20 +108,34 @@ tasks.register("runAllTests") {
     dependsOn("apiTests")
 }
 
+val testSourceSet = sourceSets["test"]
+
 tasks.register<Test>("apiTests") {
+    testClassesDirs = testSourceSet.output.classesDirs
+    classpath = testSourceSet.runtimeClasspath
+
     useJUnitPlatform {
         includeTags("api")
     }
-    systemProperty("allure.results.directory", file("build/allure-results").absolutePath)
-    doFirst { file("build/tmp/test-token.txt").delete() }
+
+    systemProperty(
+        "allure.results.directory",
+        layout.buildDirectory.dir("allure-results").get().asFile.absolutePath
+    )
 }
 
 tasks.register<Test>("uiTests") {
+    testClassesDirs = testSourceSet.output.classesDirs
+    classpath = testSourceSet.runtimeClasspath
+
     useJUnitPlatform {
         includeTags("ui")
     }
-    systemProperty("allure.results.directory", file("build/allure-results").absolutePath)
-    mustRunAfter("apiTests")
+
+    systemProperty(
+        "allure.results.directory",
+        layout.buildDirectory.dir("allure-results").get().asFile.absolutePath
+    )
 }
 //----------------------------Тесты----------------------------
 
