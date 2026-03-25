@@ -112,15 +112,15 @@ tasks.register<Test>("apiTests") {
     useJUnitPlatform {
         includeTags("api")
     }
-    doFirst {
-        file("build/tmp/test-token.txt").delete()
-    }
+    systemProperty("allure.results.directory", file("build/allure-results").absolutePath)
+    doFirst { file("build/tmp/test-token.txt").delete() }
 }
 
 tasks.register<Test>("uiTests") {
     useJUnitPlatform {
         includeTags("ui")
     }
+    systemProperty("allure.results.directory", file("build/allure-results").absolutePath)
     mustRunAfter("apiTests")
 }
 //----------------------------Тесты----------------------------
